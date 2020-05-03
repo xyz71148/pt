@@ -1,4 +1,8 @@
 
+import os
+
 
 def main():
-    print("pt")
+    dir = os.path.join(os.path.abspath(__file__))
+
+    print(dir)
