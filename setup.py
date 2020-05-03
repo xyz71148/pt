@@ -21,13 +21,10 @@ setup(
     author_email='xyz71148@gmail.com',
     description='pt',
     long_description=__doc__,
-    packages=['pt'],
+    package_dir={'': 'pt'},
     zip_safe=False,
-    include_package_data=True,
     platforms='any',
-    install_requires=[
-        'flask'
-    ],
+    install_requires=[],
     tests_require=[
         'coverage'
     ],
