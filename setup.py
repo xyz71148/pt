@@ -21,7 +21,7 @@ setup(
     author_email='xyz71148@gmail.com',
     description='pt',
     long_description=__doc__,
-    package_dir={'': 'pt'},
+    packages=['pt'],
     zip_safe=False,
     platforms='any',
     install_requires=[],
