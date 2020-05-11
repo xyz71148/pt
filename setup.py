@@ -22,7 +22,8 @@ setup(
         'pt.libs.flask_httpauth',
         'pt.libs.flask_jwt',
         'pt.libs.payment',
-        'pt.apps.gcp'
+        'pt.apps.gcp',
+        'pt.apps.server'
     ],
     zip_safe=False,
     platforms='any',

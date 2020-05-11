@@ -3,7 +3,6 @@ import hashlib
 import re
 import subprocess
 import os
-import requests
 from urllib.parse import urlparse, unquote, urlencode
 
 
