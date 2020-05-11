@@ -3,7 +3,7 @@ import logging
 from optparse import OptionParser
 from pt.libs.utils import set_logging
 from pt.cmd_options import CmdOptions
-
+import simplejson as json
 current_dir = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
 
@@ -19,6 +19,7 @@ def main():
 
     logging.debug(options)
     logging.debug(current_dir)
+    logging.info(json.dump(dict(test=1)))
 
 
 if __name__ == '__main__':
