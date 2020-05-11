@@ -68,19 +68,24 @@ class Gcp():
     def report_error(self, error):
         logging.error(error)
 
-    def shell_run(self, cmd):
+    def shell_run(self, cmd, raise_error = False):
         env = dict(os.environ, ip=self.host_ip, base_api=self.base_url, basic_user_name=self.base_username,
                    basic_password=self.base_password, instance_name=self.instance_name)
         logging.info("run: %s", cmd)
-        result = utils.shell_exec_result(cmd, **env)
-        logging.info(result)
-        return result
+        try:
+            result = utils.shell_exec_result(cmd, **env)
+            logging.info(result)
+            return result
+        except Exception as e:
+            logging.error(e)
+            if raise_error:
+                raise e
 
     def run_shadowsocks_docker(self):
         ports = " ".join(["-p {port}:{port}".format(port=port) for port in self.port_password.keys()])
 
         self.shell_run(
-            "sudo docker rm -f shadowsocks  && sudo docker run -d --name shadowsocks -e SERVER_START=1 "
+            "sudo docker rm -f shadowsocks && sudo docker run -d --name shadowsocks -e SERVER_START=1 "
             "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
             "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1")
 

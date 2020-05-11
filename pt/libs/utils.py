@@ -8,7 +8,11 @@ from urllib.parse import urlparse, unquote, urlencode
 
 def shell_exec_result(cmd, **e):
     env = dict(os.environ, **e)
-    return subprocess.check_output(cmd, shell=True, env=env)
+    try:
+        return subprocess.check_output(cmd, shell=True, env=env,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        msg = "command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
+        raise RuntimeError(msg)
 
 
 def check_email(email):

@@ -24,3 +24,9 @@ You can install this package as usual with pip:
     python setup.py sdist
     python setup.py upload
     python setup.py register sdist upload
+
+## init gcp template
+
+    sudo apt-get install -y python3-pip
+    sudo pip3 install git+https://github.com/xyz71148/pt
+    sudo pt -m server.ubuntu.init_docker
