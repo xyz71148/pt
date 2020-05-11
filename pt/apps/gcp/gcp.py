@@ -94,7 +94,7 @@ class Gcp():
             self.shell_run("curl https://"+self.gae_project_id+".appspot.com/static/proxy_go -o /bin/proxy_go && "
                            "sudo chmod +x /bin/proxy_go")
         self.shell_run("pkill proxy_go")
-        self.shell_run(
+        os.system(
             "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> "
             "/tmp/proxy.log &".format(
                 gae_project_id=self.gae_project_id,
