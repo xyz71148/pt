@@ -35,12 +35,12 @@ class Gcp():
 
     def __init__(self, query):
         logging.debug(query)
-        query = query.splt("|")
+        query = query.split("|")
         self.instance_name = query[0]
         self.gae_project_id = query[1]
         self.base_username = query[2]
         self.base_password = query[3]
-        self.base_url = query.get("BASE_URL", None)
+        self.base_url = os.getenv("BASE_URL", None)
         logging.debug(vars(self))
         if self.base_url is None:
             self.base_url = "https://{}.appspot.com".format(self.gae_project_id)
