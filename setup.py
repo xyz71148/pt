@@ -1,9 +1,3 @@
-"""
-Flask-SocketIO
---------------
-
-Socket.IO integration for Flask applications.
-"""
 import re
 from setuptools import setup
 
