@@ -45,15 +45,7 @@ class Gcp():
 
         self.url_boot = "{}/api/compute/instance/boot/{}".format(self.base_url, self.instance_name)
         self.host_ip = utils.get_host_ip()
-        self.get_instance_info()
-        self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
-        self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks_supervisor_config.conf"
-        self.path_shadowsocks_server_json = "/tmp/shadowsocks/shadowsocks_server_json.conf"
 
-        self.http_server_port = "0.0.0.0:80"
-        self.http_server_check_port = "0.0.0.0:8001"
-
-        logging.debug("init gcp: %s", vars(self))
 
     def get_instance_info(self):
         logging.debug("get_instance_info: %s", self.url_boot)
@@ -114,6 +106,16 @@ class Gcp():
             ))
 
     def init_instance(self):
+        self.get_instance_info()
+        self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
+        self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks_supervisor_config.conf"
+        self.path_shadowsocks_server_json = "/tmp/shadowsocks/shadowsocks_server_json.conf"
+
+        self.http_server_port = "0.0.0.0:80"
+        self.http_server_check_port = "0.0.0.0:8001"
+
+        logging.debug("init gcp: %s", vars(self))
+
         init_scripts = self.init_scripts
         if len(init_scripts) > 0:
             self.shell_run(init_scripts)
