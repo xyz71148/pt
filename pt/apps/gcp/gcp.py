@@ -153,7 +153,7 @@ class Gcp():
                 time.sleep(1)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
-                msg = "tb_lineno: {},error: {},trace: {}".format(exc_traceback.tb_lineno, e,
+                msg = "flineno: {}:{},error: {},trace: {}".format(__file__,exc_traceback.tb_lineno, e,
                                                                  repr(traceback.format_tb(exc_traceback)))
                 self.report_error(msg)
                 time.sleep(10)
