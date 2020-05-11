@@ -21,7 +21,7 @@ setup(
     author_email='xyz71148@gmail.com',
     description='pt',
     long_description=__doc__,
-    packages=['pt'],
+    packages=['pt','pt.libs'],
     zip_safe=False,
     platforms='any',
     install_requires=[],
