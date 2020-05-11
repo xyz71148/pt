@@ -13,6 +13,7 @@ current_dir = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 def main():
     parser = OptionParser()
     parser.add_option("-l", "--logging", default="info", dest="logging", help="logging level: debug|info")
+    parser.add_option("-q", "--query", default="", dest="query", help="query")
     parser.add_option("-m", "--module", default="", dest="module", help="""
         server.ubuntu.init_docker
         server.ubuntu.add_docker_group | gcp
@@ -27,7 +28,7 @@ def main():
     logging.debug(options)
     logging.debug(current_dir)
     if options.module == "gcp":
-        gcp.main()
+        gcp.main(options.query)
 
     if options.module == "server.ubuntu.init_docker":
         server_ubuntu.init_docker()

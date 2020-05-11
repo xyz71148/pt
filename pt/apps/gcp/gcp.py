@@ -33,22 +33,20 @@ class Gcp():
     http_server_check_port = None
     host_ip = None
 
-    def __init__(self):
-
-        logging.debug(os.environ)
-        logging.debug(self.shell_run("export"))
-        self.gae_project_id = os.getenv("GAE_PROJECT_ID")
-        self.base_username = os.getenv("BASE_USERNAME")
-        self.base_password = os.getenv("BASE_PASSWORD")
-        self.instance_name = os.getenv("INSTANCE_NAME")
-        self.base_url = os.getenv("BASE_URL", None)
+    def __init__(self, query):
+        query = json.loads(query)
+        logging.debug(query)
+        self.gae_project_id = query.get("GAE_PROJECT_ID")
+        self.base_username = query.get("BASE_USERNAME")
+        self.base_password = query.get("BASE_PASSWORD")
+        self.instance_name = query.get("INSTANCE_NAME")
+        self.base_url = query.get("BASE_URL", None)
         logging.debug(vars(self))
         if self.base_url is None:
             self.base_url = "https://{}.appspot.com".format(self.gae_project_id)
 
         self.url_boot = "{}/api/compute/instance/boot/{}".format(self.base_url, self.instance_name)
         self.host_ip = utils.get_host_ip()
-
 
     def get_instance_info(self):
         logging.debug("get_instance_info: %s", self.url_boot)
@@ -64,14 +62,14 @@ class Gcp():
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             msg = "file: {},error: {},trace: {}".format(__file__, e,
-                                                             repr(traceback.format_tb(exc_traceback)))
+                                                        repr(traceback.format_tb(exc_traceback)))
             self.report_error(msg)
 
     @classmethod
     def report_error(self, error):
         logging.error(error)
 
-    def shell_run(self, cmd, raise_error = False):
+    def shell_run(self, cmd, raise_error=False):
         env = dict(os.environ, ip=self.host_ip, base_api=self.base_url, basic_user_name=self.base_username,
                    basic_password=self.base_password, instance_name=self.instance_name)
         logging.info("run: %s", cmd)
@@ -89,13 +87,13 @@ class Gcp():
 
         self.shell_run("sudo docker rm -f shadowsocks")
         self.shell_run("sudo docker run -d --name shadowsocks -e SERVER_START=1 "
-            "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
-            "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1")
+                       "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
+                       "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1")
 
     def run_proxy_go(self):
         if os.path.exists("/bin/proxy_go") is False:
-            self.shell_run("curl https://"+self.gae_project_id+".appspot.com/static/proxy_go -o /bin/proxy_go && "
-                           "sudo chmod +x /bin/proxy_go")
+            self.shell_run("curl https://" + self.gae_project_id + ".appspot.com/static/proxy_go -o /bin/proxy_go && "
+                                                                   "sudo chmod +x /bin/proxy_go")
         self.shell_run("pkill proxy_go")
         os.system(
             "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> "
@@ -163,13 +161,13 @@ class Gcp():
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "fline: {},error: {},trace: {}".format(__file__, e,
-                                                                 repr(traceback.format_tb(exc_traceback)))
+                                                             repr(traceback.format_tb(exc_traceback)))
                 self.report_error(msg)
                 time.sleep(10)
 
 
-def main():
-    g = Gcp()
+def main(query):
+    g = Gcp(query)
     g.run()
 
 
