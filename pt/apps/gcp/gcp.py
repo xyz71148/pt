@@ -120,7 +120,7 @@ class Gcp():
         if len(init_scripts) > 0:
             self.shell_run(init_scripts)
         if self.server_type == "shadowsocks":
-            self.shell_run("sudo mkdir /tmp/shadowsocks")
+            self.shell_run("sudo mkdir -p /tmp/shadowsocks")
             utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
             utils.file_write(self.path_shadowsocks_supervisor_config, shadowsocks_supervisor_config)
             self.run_shadowsocks_docker()
