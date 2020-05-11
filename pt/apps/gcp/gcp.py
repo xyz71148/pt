@@ -34,6 +34,9 @@ class Gcp():
     host_ip = None
 
     def __init__(self):
+
+        logging.debug(os.environ)
+        logging.debug(self.shell_run("export"))
         self.gae_project_id = os.getenv("GAE_PROJECT_ID")
         self.base_username = os.getenv("BASE_USERNAME")
         self.base_password = os.getenv("BASE_PASSWORD")
