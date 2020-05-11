@@ -19,7 +19,7 @@ def main():
 
     logging.debug(options)
     logging.debug(current_dir)
-    logging.info(json.dump(dict(test=1)))
+    logging.info(json.dumps(dict(test=1)))
 
 
 if __name__ == '__main__':
