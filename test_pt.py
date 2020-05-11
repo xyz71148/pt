@@ -1,8 +1,12 @@
 import unittest
 import coverage
+import pt.utils as utils
+import os
+import subprocess
 
-cov = coverage.coverage(branch=True)
-cov.start()
+#
+# cov = coverage.coverage(branch=True)
+# cov.start()
 
 
 class TestPt(unittest.TestCase):
@@ -16,8 +20,10 @@ class TestPt(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_connect(self):
-        self.assertFalse(False)
+    def test_shell(self):
+        TEST_ENV = "TEST_ENV_VALUE"
+        r = utils.shell_exec_result("export", TEST_ENV=TEST_ENV)
+        self.assertTrue(str(r).find(TEST_ENV) > 0)
 
 
 if __name__ == '__main__':
