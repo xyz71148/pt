@@ -115,7 +115,7 @@ class Gcp():
     def init_instance(self):
         self.get_instance_info()
         self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
-        self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks_supervisor_config.conf"
+        self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks.conf"
         self.path_shadowsocks_server_json = "/tmp/shadowsocks/shadowsocks_server_json.conf"
 
         self.http_server_port = "0.0.0.0:80"
