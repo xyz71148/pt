@@ -19,7 +19,7 @@ sudo add-apt-repository \
    stable"
 
 sudo apt-get update
-sudo apt-get install -y curl git expect python3-pip docker-ce docker-ce-cli containerd.io
+sudo apt-get install -y curl git expect docker-ce docker-ce-cli containerd.io
 
 # Make sure docker service is running
 sudo service docker start
