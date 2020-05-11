@@ -86,7 +86,7 @@ class Gcp():
 
     def run_proxy_go(self):
         if os.path.exists("/bin/proxy_go") is False:
-            self.shell_run("curl https://{proxy_project_id}.appspot.com/static/proxy_go -o /bin/proxy_go && "
+            self.shell_run("curl https://"+self.gae_project_id+".appspot.com/static/proxy_go -o /bin/proxy_go && "
                            "sudo chmod +x /bin/proxy_go")
         self.shell_run(
             "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> "
