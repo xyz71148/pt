@@ -57,18 +57,28 @@ class Gcp():
 
     def get_instance_info(self):
         logging.debug("get_instance_info: %s", self.url_boot)
-        res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
-        logging.debug(res.text)
-        res_json = res.json()
-        self.server_type = res_json['body']['server_type']
-        self.init_scripts = res_json['body']['init_scripts']
-        self.instance_ports_config = res_json['body']['config']
-        self.port_password = res_json['body']['config']['port_password']
-        return res_json['body']
+        try:
+            res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
+            logging.debug(res.text)
+            res_json = res.json()
+            self.server_type = res_json['body']['server_type']
+            self.init_scripts = res_json['body']['init_scripts']
+            self.instance_ports_config = res_json['body']['config']
+            self.port_password = res_json['body']['config']['port_password']
+            return res_json['body']
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            msg = "tb_lineno: {},error: {},trace: {}".format(exc_traceback.tb_lineno, e,
+                                                             repr(traceback.format_tb(exc_traceback)))
+            self.report_error(msg)
+
+    @classmethod
+    def report_error(self, error):
+        logging.error(error)
 
     def shell_run(self, cmd):
         env = dict(os.environ, ip=self.host_ip, base_api=self.base_url, basic_user_name=self.base_username,
-                   basic_password=self.base_password,instance_name=self.instance_name)
+                   basic_password=self.base_password, instance_name=self.instance_name)
         logging.info("run: %s", cmd)
         result = utils.shell_exec_result(cmd, **env)
         logging.info(result)
@@ -126,7 +136,7 @@ class Gcp():
 
         instance_ports_config = utils.file_read(self.path_shadowsocks_server_json)
         if json.dumps(self.instance_ports_config) != instance_ports_config:
-            utils.file_write(self.path_shadowsocks_server_json,json.dumps(self.instance_ports_config))
+            utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
             self.run_shadowsocks_docker()
             self.upload_instance_status()
 
@@ -137,10 +147,11 @@ class Gcp():
             try:
                 self.check()
             except Exception as e:
-                logging.error(e)
                 exc_type, exc_value, exc_traceback = sys.exc_info()
-                logging.error(repr(traceback.format_tb(exc_traceback)))
-                logging.error("*** tb_lineno:%s", exc_traceback.tb_lineno)
+                msg = "tb_lineno: {},error: {},trace: {}".format(exc_traceback.tb_lineno, e,
+                                                                 repr(traceback.format_tb(exc_traceback)))
+                self.report_error(msg)
+                time.sleep(10)
 
 
 def main():
