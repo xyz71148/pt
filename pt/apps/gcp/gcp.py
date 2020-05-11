@@ -141,11 +141,14 @@ class Gcp():
             self.upload_instance_status()
 
     def run(self):
-        self.init_instance()
+        init = False
         while True:
-            time.sleep(1)
             try:
+                if init is False:
+                    init = True
+                    self.init_instance()
                 self.check()
+                time.sleep(1)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "tb_lineno: {},error: {},trace: {}".format(exc_traceback.tb_lineno, e,
