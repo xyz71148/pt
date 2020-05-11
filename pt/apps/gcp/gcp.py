@@ -27,6 +27,7 @@ class Gcp():
     server_type = None
     init_scripts = None
     instance_ports_config = None
+    instance = None
     port_password = None
     base_url = None
     http_server_port = None
@@ -54,6 +55,7 @@ class Gcp():
             res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
             logging.debug(res.text)
             res_json = res.json()
+            self.instance = res_json['body']
             self.server_type = res_json['body']['server_type']
             self.init_scripts = res_json['body']['init_scripts']
             self.instance_ports_config = res_json['body']['config']
@@ -63,11 +65,13 @@ class Gcp():
             exc_type, exc_value, exc_traceback = sys.exc_info()
             msg = "file: {},error: {},trace: {}".format(__file__, e,
                                                         repr(traceback.format_tb(exc_traceback)))
-            self.report_error(msg)
+            self.report_error(e,msg)
 
     @classmethod
-    def report_error(self, error):
+    def report_error(self, e,error):
         logging.error(error)
+        requests.put("{}//api/utils/email".format(self.base_url),
+                         dict(email=self.instance['email'],title=e,content=error), auth=(self.base_username, self.base_password))
 
     def shell_run(self, cmd, raise_error=False):
         env = dict(os.environ, ip=self.host_ip, base_api=self.base_url, basic_user_name=self.base_username,
@@ -162,7 +166,7 @@ class Gcp():
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "fline: {},error: {},trace: {}".format(__file__, e,
                                                              repr(traceback.format_tb(exc_traceback)))
-                self.report_error(msg)
+                self.report_error(e,msg)
                 time.sleep(10)
 
 
