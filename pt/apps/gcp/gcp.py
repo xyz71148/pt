@@ -34,12 +34,12 @@ class Gcp():
     host_ip = None
 
     def __init__(self, query):
-        query = json.loads(query)
         logging.debug(query)
-        self.gae_project_id = query.get("GAE_PROJECT_ID")
-        self.base_username = query.get("BASE_USERNAME")
-        self.base_password = query.get("BASE_PASSWORD")
-        self.instance_name = query.get("INSTANCE_NAME")
+        query = query.splt("|")
+        self.instance_name = query[0]
+        self.gae_project_id = query[1]
+        self.base_username = query[2]
+        self.base_password = query[3]
         self.base_url = query.get("BASE_URL", None)
         logging.debug(vars(self))
         if self.base_url is None:
