@@ -93,6 +93,7 @@ class Gcp():
         if os.path.exists("/bin/proxy_go") is False:
             self.shell_run("curl https://"+self.gae_project_id+".appspot.com/static/proxy_go -o /bin/proxy_go && "
                            "sudo chmod +x /bin/proxy_go")
+        self.shell_run("pkill proxy_go")
         self.shell_run(
             "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> "
             "/tmp/proxy.log &".format(
@@ -120,7 +121,7 @@ class Gcp():
         self.http_server_check_port = "0.0.0.0:8001"
 
         logging.debug("init gcp: %s", vars(self))
-
+        self.run_proxy_go()
         init_scripts = self.init_scripts
         if len(init_scripts) > 0:
             self.shell_run(init_scripts)
