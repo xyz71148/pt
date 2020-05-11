@@ -81,7 +81,7 @@ class Gcp():
 
         self.shell_run(
             "sudo docker rm -f shadowsocks  && sudo docker run -d --name shadowsocks -e SERVER_START=1 "
-            "/tmp/shadowsocks:/etc/supervisor/conf_d -e "
+            "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
             "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1")
 
     def run_proxy_go(self):
