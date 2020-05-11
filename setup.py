@@ -21,7 +21,14 @@ setup(
     author_email='xyz71148@gmail.com',
     description='pt',
     long_description=__doc__,
-    packages=['pt','pt.libs'],
+    packages=[
+        'pt',
+        'pt.libs',
+        'pt.libs.block_chain',
+        'pt.libs.flask_httpauth',
+        'pt.libs.flask_jwt',
+        'pt.libs.payment'
+    ],
     zip_safe=False,
     platforms='any',
     install_requires=[],
