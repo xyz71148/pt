@@ -19,13 +19,14 @@ sudo add-apt-repository \
    stable"
 
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo apt-get install -y curl git expect python3-pip docker-ce docker-ce-cli containerd.io
 
 # Make sure docker service is running
 sudo service docker start
 
+sudo docker pull sanfun/public:shadowsocks-v1
 # Test docker installation
-docker ps
+sudo docker ps
 """
 
 
