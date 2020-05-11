@@ -1,6 +1,6 @@
 import unittest
 import coverage
-import pt.utils as utils
+import pt.libs.utils as utils
 import os
 import subprocess
 

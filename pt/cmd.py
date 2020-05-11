@@ -1,7 +1,7 @@
 import os
 import logging
 from optparse import OptionParser
-from pt.utils import set_logging
+from pt.libs.utils import set_logging
 from pt.cmd_options import CmdOptions
 
 current_dir = os.path.dirname(os.path.join(os.path.abspath(__file__)))
