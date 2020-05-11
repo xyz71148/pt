@@ -3,13 +3,16 @@ import logging
 from optparse import OptionParser
 from pt.libs.utils import set_logging
 from pt.cmd_options import CmdOptions
-import simplejson as json
+from pt.apps.gcp import gcp
+
+
 current_dir = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
 
 def main():
     parser = OptionParser()
     parser.add_option("-l", "--logging", default="info", dest="logging", help="logging level: debug|info")
+    parser.add_option("-m", "--module", default="", dest="module", help="module")
     (options, args) = parser.parse_args()
     CmdOptions.set_options(options)
     if options.logging == "debug":
@@ -19,7 +22,8 @@ def main():
 
     logging.debug(options)
     logging.debug(current_dir)
-    logging.info(json.dumps(dict(test=1)))
+    if options.module == "gcp":
+        gcp.main()
 
 
 if __name__ == '__main__':

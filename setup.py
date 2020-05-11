@@ -21,7 +21,8 @@ setup(
         'pt.libs.block_chain',
         'pt.libs.flask_httpauth',
         'pt.libs.flask_jwt',
-        'pt.libs.payment'
+        'pt.libs.payment',
+        'pt.apps.gcp'
     ],
     zip_safe=False,
     platforms='any',

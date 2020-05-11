@@ -3,6 +3,7 @@ import hashlib
 import re
 import subprocess
 import os
+import requests
 from urllib.parse import urlparse, unquote, urlencode
 
 
@@ -48,3 +49,21 @@ def url_decode_query(url):
         t = i.split("=")
         j[t[0]] = unquote(t[1])
     return j
+
+
+def get_host_ip():
+    ip = shell_exec_result("dig +short myip.opendns.com @resolver1.opendns.com")
+    return ip.decode("utf8").strip()
+
+
+def file_write(path,content):
+    f = open(path, "w")
+    f.write(content)
+    f.close()
+
+
+def file_read(path):
+    f = open(path, "r")
+    content = f.read().strip()
+    f.close()
+    return content
