@@ -39,7 +39,7 @@ class Gcp():
         self.base_password = os.getenv("BASE_PASSWORD")
         self.instance_name = os.getenv("INSTANCE_NAME")
         self.base_url = os.getenv("BASE_URL", None)
-
+        logging.debug(vars(self))
         if self.base_url is None:
             self.base_url = "https://{}.appspot.com".format(self.gae_project_id)
 
