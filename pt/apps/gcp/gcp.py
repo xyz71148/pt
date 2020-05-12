@@ -110,8 +110,8 @@ class Gcp():
                      auth=(self.base_username, self.base_password))
 
     def shell_run(self, cmd, raise_error=False):
-        env = dict(os.environ, ip=self.host_ip, base_api=self.base_url, basic_user_name=self.base_username,
-                   basic_password=self.base_password, instance_name=self.instance_name)
+        env = dict(os.environ, host_ip=self.host_ip, base_url=self.base_url, base_username=self.base_username,
+                   base_password=self.base_password, instance_name=self.instance_name)
         logging.info("run: %s", cmd)
         try:
             result = utils.shell_exec_result(cmd, **env)
@@ -147,7 +147,7 @@ class Gcp():
     def upload_instance_status(self):
         file_upload = ""
         if self.server_type == "openvpn":
-            file_upload = "-F files=@/tmp/ovpn/{}.ovpn".format(self.host_name)
+            file_upload = "-F files=@{}".format(self.ovpn_file)
 
         self.shell_run(
             "curl -u {base_username}:{base_password} -X PUT -F ip={host_ip} {file_upload} {report_url}".format(
@@ -184,8 +184,8 @@ class Gcp():
         if self.server_type == "openvpn":
             self.init_openvpn()
 
-        self.shell_run("sudo docker ps")
-        self.shell_run("netstat -tnlp")
+        # self.shell_run("sudo docker ps")
+        # self.shell_run("netstat -tnlp")
         self.upload_instance_status()
 
     def init_openvpn(self):
@@ -215,10 +215,12 @@ class Gcp():
         utils.file_write("/opt/build_client_full.txt", build_client_full_str)
         os_system("expect -f /opt/build_client_full.txt", info=1)
         self.shell_run(
-            "sudo docker run --volumes-from {ovpn_data}  kylemanna/openvpn ovpn_getclient {host_name} > /opt/{host_name}.ovpn".format(
+            "sudo docker run --volumes-from {ovpn_data}  kylemanna/openvpn ovpn_getclient {host_name} > {ovpn_file}".format(
                 ovpn_data=self.ovpn_data,
                 host_name=self.host_name,
+                ovpn_file=self.ovpn_file
             ), raise_error=True)
+
         self.shell_run("sudo docker rm -f openvpn")
         self.shell_run(
             "sudo docker run --name openvpn --volumes-from {ovpn_data} -d -p {port}:{port}/udp --cap-add=NET_ADMIN kylemanna/openvpn".format(
