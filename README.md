@@ -19,10 +19,14 @@ You can install this package as usual with pip:
     source venv/bin/activate
     pip install -r requirements.txt
     
-    python setup.py check
-    python setup.py sdist bdist_wheel
-    twine upload --repository-url testpypi dist/*
-    python setup.py upload
+    pip3 install twine
+    python3 setup.py sdist bdist_wheel
+    
+    twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+    twine upload dist/*
+    
+    python3 setup.py check
+    python3 setup.py  sdist upload
 
 ## init gcp template
 

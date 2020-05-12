@@ -18,6 +18,27 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/fd/2
 stderr_logfile_maxbytes=0"""
 
+ovpn_initpki = """#exp_internal 1 # Uncomment for debug
+set timeout -1
+spawn sudo docker run -it --volumes-from {ovpn_data} kylemanna/openvpn ovpn_initpki
+#expect -exact "Confirm removal:"
+#send -- "yes{sep}"
+expect -exact "Enter New CA Key Passphrase:"
+send -- "{pwd}{sep}"
+expect -exact "Re-Enter New CA Key Passphrase:"
+send -- "{pwd}{sep}"
+expect -exact "Common Name (eg: your user, host, or server name) \[Easy-RSA CA\]:"
+send -- "{host_ip}{sep}"
+expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key:"
+send -- "{pwd}{sep}"
+expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key:"
+send -- "{pwd}{sep}"
+expect eof"""
+
+build_client_full = """spawn sudo docker run -it --volumes-from {ovpn_data} kylemanna/openvpn easyrsa build-client-full {host_name} nopass
+expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key"
+send -- "{pwd}{sep}"
+expect eof"""
 
 class Gcp():
     gae_project_id = None
@@ -48,6 +69,9 @@ class Gcp():
 
         self.url_boot = "{}/api/compute/instance/boot/{}".format(self.base_url, self.instance_name)
         self.host_ip = utils.get_host_ip()
+        self.host_name = self.host_ip.replace(".","_")
+        self.ovpn_file = "/opt/{}.ovpn".format(self.host_name)
+        self.ovpn_data = "ovpn-data"
 
     def get_instance_info(self):
         logging.debug("get_instance_info: %s", self.url_boot)
@@ -92,7 +116,7 @@ class Gcp():
         self.shell_run("sudo docker rm -f shadowsocks")
         self.shell_run("sudo docker run -d --name shadowsocks -e SERVER_START=1 "
                        "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
-                       "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1")
+                       "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1",raise_error=True)
 
     def run_proxy_go(self):
         if os.path.exists("/bin/proxy_go") is False:
@@ -108,13 +132,20 @@ class Gcp():
             ))
 
     def upload_instance_status(self):
+        file_upload = ""
+        if self.server_type == "openvpn":
+            file_upload = "-F files=@/tmp/ovpn/{}.ovpn".format(self.host_name)
+
         self.shell_run(
-            "curl -u {base_username}:{base_password} -X PUT -F ip={host_ip} -F init=1 {report_url}".format(
+            "curl -u {base_username}:{base_password} -X PUT -F ip={host_ip} {file_upload} {report_url}".format(
                 base_username=self.base_username,
                 base_password=self.base_password,
                 host_ip=self.host_ip,
                 report_url=self.url_report,
+                file_upload=file_upload
             ))
+
+
 
     def init_instance(self):
         self.get_instance_info()
@@ -126,16 +157,59 @@ class Gcp():
         self.http_server_check_port = "0.0.0.0:8001"
 
         logging.debug("init gcp: %s", vars(self))
+
         self.run_proxy_go()
+
         init_scripts = self.init_scripts
         if len(init_scripts) > 0:
             self.shell_run(init_scripts)
+
         if self.server_type == "shadowsocks":
             self.shell_run("mkdir -p /tmp/shadowsocks")
             utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
             utils.file_write(self.path_shadowsocks_supervisor_config, shadowsocks_supervisor_config)
             self.run_shadowsocks_docker()
+
+        if self.server_type == "openvpn":
+            self.init_openvpn()
+
         self.upload_instance_status()
+
+    def init_openvpn(self):
+        if os.path.exists(self.ovpn_file):
+            return
+
+        self.shell_run("sudo docker rm -f {}".format(self.ovpn_data))
+        self.shell_run("sudo docker run --name {ovpn_data} -v /etc/openvpn busybox".format(ovpn_data=self.ovpn_data))
+
+        port = list(self.port_password.keys())[0]
+        pwd = self.port_password[port]
+
+        self.shell_run("sudo docker run --volumes-from {ovpn_data} kylemanna/openvpn ovpn_genconfig -u udp://{host_ip}:{port}".format(
+            ovpn_data=self.ovpn_data,
+            host_ip = self.host_ip,
+            port = port,
+        ))
+
+        ovpn_initpki_str = ovpn_initpki.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd, host_ip=self.host_ip)
+        utils.file_write("/opt/ovpn_initpki.txt",ovpn_initpki_str)
+
+        self.shell_run("expect -f /opt/ovpn_initpki.txt",raise_error=True)
+
+        build_client_full_str = build_client_full.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd, host_name=self.host_name)
+        utils.file_write("/opt/build_client_full.txt",build_client_full_str)
+        self.shell_run("expect -f /opt/build_client_full.txt",raise_error=True)
+        self.shell_run("sudo docker run --volumes-from {ovpn_data}  kylemanna/openvpn ovpn_getclient {host_name} > /opt/{host_name}.ovpn".format(
+            ovpn_data=self.ovpn_data,
+            host_name=self.host_name,
+        ),raise_error=True)
+        self.shell_run("sudo docker rm -f openvpn")
+        self.shell_run(
+            "sudo docker run --name openvpn --volumes-from {ovpn_data} -d -p {port}:{port}/udp --cap-add=NET_ADMIN kylemanna/openvpn".format(
+                ovpn_data=self.ovpn_data,
+                host_name=self.host_name,
+                port=port
+            ), raise_error=True)
 
     def check(self):
         logging.info("checking instance")
@@ -147,11 +221,12 @@ class Gcp():
                              dict(cmd_result=output), auth=(self.base_username, self.base_password))
             logging.info(r.text)
 
-        instance_ports_config = utils.file_read(self.path_shadowsocks_server_json)
-        if json.dumps(self.instance_ports_config) != instance_ports_config:
-            utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
-            self.run_shadowsocks_docker()
-            self.upload_instance_status()
+        if self.server_type == "shadowsocks":
+            instance_ports_config = utils.file_read(self.path_shadowsocks_server_json)
+            if json.dumps(self.instance_ports_config) != instance_ports_config:
+                utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
+                self.run_shadowsocks_docker()
+                self.upload_instance_status()
 
     def run(self):
         init = False
