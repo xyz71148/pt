@@ -50,6 +50,7 @@ def os_system(cmd, info=1):
     if error > 0:
         raise Exception("run result: {}".format(error))
 
+
 class Gcp():
     gae_project_id = None
     base_username = None
@@ -79,7 +80,7 @@ class Gcp():
 
         self.url_boot = "{}/api/compute/instance/boot/{}".format(self.base_url, self.instance_name)
         self.host_ip = utils.get_host_ip()
-        self.host_name = self.host_ip.replace(".","_")
+        self.host_name = self.host_ip.replace(".", "_")
         self.ovpn_file = "/opt/{}.ovpn".format(self.host_name)
         self.ovpn_data = "ovpn-data"
 
@@ -99,13 +100,14 @@ class Gcp():
             exc_type, exc_value, exc_traceback = sys.exc_info()
             msg = "file: {},error: {},trace: {}".format(__file__, e,
                                                         repr(traceback.format_tb(exc_traceback)))
-            self.report_error(e,msg)
+            self.report_error(e, msg)
 
     @classmethod
-    def report_error(self, e,error):
+    def report_error(self, e, error):
         logging.error(error)
         requests.put("{}//api/utils/email".format(self.base_url),
-                         dict(email=self.instance['email'],title=e,content=error), auth=(self.base_username, self.base_password))
+                     dict(email=self.instance['email'], title=e, content=error),
+                     auth=(self.base_username, self.base_password))
 
     def shell_run(self, cmd, raise_error=False):
         env = dict(os.environ, ip=self.host_ip, base_api=self.base_url, basic_user_name=self.base_username,
@@ -126,7 +128,8 @@ class Gcp():
         self.shell_run("sudo docker rm -f shadowsocks")
         self.shell_run("sudo docker run -d --name shadowsocks -e SERVER_START=1 "
                        "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
-                       "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1",raise_error=True)
+                       "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1",
+                       raise_error=True)
 
     def run_proxy_go(self):
         if os.path.exists("/bin/proxy_go") is False:
@@ -134,12 +137,11 @@ class Gcp():
                                                                    "sudo chmod +x /bin/proxy_go")
         self.shell_run("pkill proxy_go")
         cmd = "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> /tmp/proxy.log &".format(
-                gae_project_id=self.gae_project_id,
-                http_server_check_port=self.http_server_check_port,
-                http_server_port=self.http_server_port
-            )
-        logging.info(cmd)
-        os.system(cmd)
+            gae_project_id=self.gae_project_id,
+            http_server_check_port=self.http_server_check_port,
+            http_server_port=self.http_server_port
+        )
+        os_system(cmd, info=1)
         self.shell_run("pgrep proxy_go")
 
     def upload_instance_status(self):
@@ -155,8 +157,6 @@ class Gcp():
                 report_url=self.url_report,
                 file_upload=file_upload
             ))
-
-
 
     def init_instance(self):
         self.get_instance_info()
@@ -198,24 +198,27 @@ class Gcp():
         port = list(self.port_password.keys())[0]
         pwd = self.port_password[port]
 
-        self.shell_run("sudo docker run --volumes-from {ovpn_data} kylemanna/openvpn ovpn_genconfig -u udp://{host_ip}:{port}".format(
-            ovpn_data=self.ovpn_data,
-            host_ip = self.host_ip,
-            port = port,
-        ))
+        self.shell_run(
+            "sudo docker run --volumes-from {ovpn_data} kylemanna/openvpn ovpn_genconfig -u udp://{host_ip}:{port}".format(
+                ovpn_data=self.ovpn_data,
+                host_ip=self.host_ip,
+                port=port,
+            ))
 
         ovpn_initpki_str = ovpn_initpki.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd, host_ip=self.host_ip)
-        utils.file_write("/opt/ovpn_initpki.txt",ovpn_initpki_str)
+        utils.file_write("/opt/ovpn_initpki.txt", ovpn_initpki_str)
 
-        os_system("expect -f /opt/ovpn_initpki.txt",info=1)
+        os_system("expect -f /opt/ovpn_initpki.txt", info=1)
 
-        build_client_full_str = build_client_full.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd, host_name=self.host_name)
-        utils.file_write("/opt/build_client_full.txt",build_client_full_str)
-        os_system("expect -f /opt/build_client_full.txt",info=1)
-        self.shell_run("sudo docker run --volumes-from {ovpn_data}  kylemanna/openvpn ovpn_getclient {host_name} > /opt/{host_name}.ovpn".format(
-            ovpn_data=self.ovpn_data,
-            host_name=self.host_name,
-        ),raise_error=True)
+        build_client_full_str = build_client_full.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd,
+                                                         host_name=self.host_name)
+        utils.file_write("/opt/build_client_full.txt", build_client_full_str)
+        os_system("expect -f /opt/build_client_full.txt", info=1)
+        self.shell_run(
+            "sudo docker run --volumes-from {ovpn_data}  kylemanna/openvpn ovpn_getclient {host_name} > /opt/{host_name}.ovpn".format(
+                ovpn_data=self.ovpn_data,
+                host_name=self.host_name,
+            ), raise_error=True)
         self.shell_run("sudo docker rm -f openvpn")
         self.shell_run(
             "sudo docker run --name openvpn --volumes-from {ovpn_data} -d -p {port}:{port}/udp --cap-add=NET_ADMIN kylemanna/openvpn".format(
@@ -254,7 +257,7 @@ class Gcp():
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "fline: {},error: {},trace: {}".format(__file__, e,
                                                              repr(traceback.format_tb(exc_traceback)))
-                self.report_error(e,msg)
+                self.report_error(e, msg)
                 time.sleep(10)
             break
 
