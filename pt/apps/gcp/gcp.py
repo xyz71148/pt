@@ -261,7 +261,6 @@ class Gcp():
                                                              repr(traceback.format_tb(exc_traceback)))
                 self.report_error(e, msg)
                 time.sleep(10)
-            break
 
 
 def main(query):
