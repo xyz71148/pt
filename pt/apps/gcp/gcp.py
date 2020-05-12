@@ -236,6 +236,7 @@ class Gcp():
                     init = True
                     self.init_instance()
                 self.check()
+                break
                 time.sleep(1)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
