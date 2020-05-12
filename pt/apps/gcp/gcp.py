@@ -123,13 +123,14 @@ class Gcp():
             self.shell_run("curl https://" + self.gae_project_id + ".appspot.com/static/proxy_go -o /bin/proxy_go && "
                                                                    "sudo chmod +x /bin/proxy_go")
         self.shell_run("pkill proxy_go")
-        os.system(
-            "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> "
-            "/tmp/proxy.log &".format(
+        cmd = "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> /tmp/proxy.log &".format(
                 gae_project_id=self.gae_project_id,
                 http_server_check_port=self.http_server_check_port,
                 http_server_port=self.http_server_port
-            ))
+            )
+        logging.info(cmd)
+        os.system(cmd)
+        self.shell_run("pgrep proxy_go")
 
     def upload_instance_status(self):
         file_upload = ""
@@ -173,6 +174,8 @@ class Gcp():
         if self.server_type == "openvpn":
             self.init_openvpn()
 
+        self.shell_run("sudo docker ps")
+        self.shell_run("netstat -tnlp")
         self.upload_instance_status()
 
     def init_openvpn(self):
