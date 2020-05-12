@@ -40,6 +40,16 @@ expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key"
 send -- "{pwd}{sep}"
 expect eof"""
 
+
+def os_system(cmd, info=1):
+    cmd = cmd.strip('"').strip(",")
+    msg = "> exec: {}".format(cmd)
+    if info == 1:
+        print(msg)
+    error = os.system(cmd)
+    if error > 0:
+        raise Exception("run result: {}".format(error))
+
 class Gcp():
     gae_project_id = None
     base_username = None
@@ -197,11 +207,11 @@ class Gcp():
         ovpn_initpki_str = ovpn_initpki.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd, host_ip=self.host_ip)
         utils.file_write("/opt/ovpn_initpki.txt",ovpn_initpki_str)
 
-        self.shell_run("expect -f /opt/ovpn_initpki.txt",raise_error=True)
+        os_system("expect -f /opt/ovpn_initpki.txt",info=1)
 
         build_client_full_str = build_client_full.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd, host_name=self.host_name)
         utils.file_write("/opt/build_client_full.txt",build_client_full_str)
-        self.shell_run("expect -f /opt/build_client_full.txt",raise_error=True)
+        os_system("expect -f /opt/build_client_full.txt",info=1)
         self.shell_run("sudo docker run --volumes-from {ovpn_data}  kylemanna/openvpn ovpn_getclient {host_name} > /opt/{host_name}.ovpn".format(
             ovpn_data=self.ovpn_data,
             host_name=self.host_name,
