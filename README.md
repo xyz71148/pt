@@ -30,3 +30,7 @@ You can install this package as usual with pip:
     sudo apt-get install -y python3-pip
     sudo pip3 install git+https://github.com/xyz71148/pt
     sudo pt -m server.ubuntu.init_docker
+    
+    
+    alias vpn='cd ~/data/bin && chmod +x y-deng.darwin.amd64.v1.0 && sudo ./y-deng.darwin.amd64.v1.0'
+    alias oss='curl http://jie8.cc/f/p-oss'

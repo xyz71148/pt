@@ -134,7 +134,6 @@ class Gcp():
         self.upload_instance_status()
 
     def check(self):
-        logging.info("checking instance")
         instance_info = self.get_instance_info()
         cmd = instance_info['cmd']
         if len(cmd) > 0:
@@ -151,7 +150,11 @@ class Gcp():
 
     def run(self):
         init = False
+        i = 0
         while True:
+            i += 1
+            if i % 99 == 0:
+                logging.info("checking instance")
             try:
                 if init is False:
                     init = True
