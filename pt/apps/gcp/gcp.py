@@ -81,7 +81,7 @@ class Gcp():
         self.url_boot = "{}/api/compute/instance/boot/{}".format(self.base_url, self.instance_name)
         self.host_ip = utils.get_host_ip()
         self.host_name = self.host_ip.replace(".", "_")
-        self.ovpn_file = "/opt/{}.ovpn".format(self.host_name)
+        self.ovpn_file = "/opt/openvpn/{}.ovpn".format(self.host_name)
         self.ovpn_data = "ovpn-data"
 
     def get_instance_info(self):
@@ -191,7 +191,7 @@ class Gcp():
     def init_openvpn(self):
         if os.path.exists(self.ovpn_file):
             return
-
+        self.shell_run("sudo mkdir -p /opt/openvpn")
         self.shell_run("sudo docker rm -f {}".format(self.ovpn_data))
         self.shell_run("sudo docker run --name {ovpn_data} -v /etc/openvpn busybox".format(ovpn_data=self.ovpn_data))
 
@@ -206,14 +206,14 @@ class Gcp():
             ))
 
         ovpn_initpki_str = ovpn_initpki.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd, host_ip=self.host_ip)
-        utils.file_write("/opt/ovpn_initpki.txt", ovpn_initpki_str)
+        utils.file_write("/opt/openvpn/ovpn_initpki.txt", ovpn_initpki_str)
 
-        os_system("expect -f /opt/ovpn_initpki.txt", info=1)
+        os_system("expect -f /opt/openvpn/ovpn_initpki.txt", info=1)
 
         build_client_full_str = build_client_full.format(sep=r"\r", ovpn_data=self.ovpn_data, pwd=pwd,
                                                          host_name=self.host_name)
-        utils.file_write("/opt/build_client_full.txt", build_client_full_str)
-        os_system("expect -f /opt/build_client_full.txt", info=1)
+        utils.file_write("/opt/openvpn/build_client_full.txt", build_client_full_str)
+        os_system("expect -f /opt/openvpn/build_client_full.txt", info=1)
         self.shell_run(
             "sudo docker run --volumes-from {ovpn_data}  kylemanna/openvpn ovpn_getclient {host_name} > {ovpn_file}".format(
                 ovpn_data=self.ovpn_data,
