@@ -28,11 +28,21 @@ setup(
         'pt.apps.server'
     ],
     package_data={
-        "pt": ["apps/chat/templates/*.html"]
+        "pt": ["apps/chat/templates/*.html","test1/*.json"]
     },
     zip_safe=False,
     platforms='any',
-    install_requires=[],
+    install_requires=[
+        "simplejson",
+        "requests",
+        "google-cloud-ndb",
+        "web3",
+        "jwt",
+        "paypalrestsdk",
+        "websockets",
+        "flask",
+        "flask_socketio"
+    ],
     tests_require=[
         'coverage'
     ],
