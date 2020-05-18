@@ -271,8 +271,8 @@ def main(query):
 
 
 def init_machine_template():
-    utils.shell_exec_result("sudo docker rm -f $(sudo docker ps -aq)")
     utils.shell_exec_result("sudo rm -rf /opt/openvpn /tmp/*.py /tmp/*.log /tmp/*.sh /tmp/shadowsocks")
+    utils.shell_exec_result("sudo docker rm -f $(sudo docker ps -aq)")
 
 
 if __name__ == '__main__':
