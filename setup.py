@@ -5,7 +5,6 @@ with open('pt/__init__.py', 'r') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         f.read(), re.MULTILINE).group(1)
 
-
 setup(
     name='pt',
     version=version,
@@ -28,6 +27,10 @@ setup(
         'pt.apps.chat.templates',
         'pt.apps.server'
     ],
+    package_data={
+        "pt": "test/*.html"
+    },
+
     zip_safe=False,
     platforms='any',
     install_requires=[],
