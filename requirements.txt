@@ -4,3 +4,6 @@ google-cloud-ndb
 web3
 jwt
 paypalrestsdk
+websockets
+flask
+flask_socketio

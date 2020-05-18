@@ -23,6 +23,9 @@ setup(
         'pt.libs.flask_jwt',
         'pt.libs.payment',
         'pt.apps.gcp',
+        'pt.apps.ws',
+        'pt.apps.chat',
+        'pt.apps.chat.templates',
         'pt.apps.server'
     ],
     zip_safe=False,
