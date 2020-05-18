@@ -98,17 +98,20 @@ class Gcp():
             return res_json['body']
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            msg = "file: {},error: {},trace: {}".format(__file__, e,
-                                                        repr(traceback.format_tb(exc_traceback)))
+            msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
             self.report_error(e, msg)
 
     @classmethod
     def report_error(self, e, error):
         logging.error(error)
-        requests.put("{}//api/utils/email".format(self.base_url),
+        try:
+            requests.put("{}//api/utils/email".format(self.base_url),
                      dict(email=self.instance['email'], title=e, content=error),
                      auth=(self.base_username, self.base_password))
-
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
+            logging.error(msg)
     def shell_run(self, cmd, raise_error=False):
         env = dict(os.environ, host_ip=self.host_ip, base_url=self.base_url, base_username=self.base_username,
                    base_password=self.base_password, instance_name=self.instance_name)
@@ -124,7 +127,6 @@ class Gcp():
 
     def run_shadowsocks_docker(self):
         ports = " ".join(["-p {port}:{port}".format(port=port) for port in self.port_password.keys()])
-
         self.shell_run("sudo docker rm -f shadowsocks")
         self.shell_run("sudo docker run -d --name shadowsocks -e SERVER_START=1 "
                        "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
@@ -230,7 +232,6 @@ class Gcp():
             ), raise_error=True)
 
     def check(self):
-        logging.info("checking instance")
         instance_info = self.get_instance_info()
         cmd = instance_info['cmd']
         if len(cmd) > 0:
@@ -253,12 +254,13 @@ class Gcp():
                 if init is False:
                     init = True
                     self.init_instance()
+                if int(time.time()) % 3600 == 0:
+                    logging.info("checking instance")
                 self.check()
                 time.sleep(1)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
-                msg = "fline: {},error: {},trace: {}".format(__file__, e,
-                                                             repr(traceback.format_tb(exc_traceback)))
+                msg = "{},{},{}".format(exc_type,exc_value,traceback.format_tb(exc_traceback))
                 self.report_error(e, msg)
                 time.sleep(10)
 
@@ -270,4 +272,4 @@ def main(query):
 
 if __name__ == '__main__':
     utils.set_logging(logging.DEBUG)
-    main()
+    main(os.getenv("query"))
