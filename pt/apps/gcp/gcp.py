@@ -270,6 +270,11 @@ def main(query):
     g.run()
 
 
+def init_machine_template():
+    utils.shell_exec_result("sudo docker rm -f $(sudo docker ps -aq)")
+    utils.shell_exec_result("sudo rm -rf /opt/openvpn /tmp/*.py /tmp/*.log /tmp/*.sh /tmp/shadowsocks")
+
+
 if __name__ == '__main__':
     utils.set_logging(logging.DEBUG)
     main(os.getenv("query"))

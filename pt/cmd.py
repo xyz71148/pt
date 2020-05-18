@@ -6,6 +6,7 @@ from pt.cmd_options import CmdOptions
 from pt.apps.gcp import gcp
 import pt.apps.server.ubuntu as server_ubuntu
 from pt import __version__
+import pprint
 
 current_dir = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
@@ -30,14 +31,23 @@ def main():
         set_logging_file(options.level,options.log_file)
 
     logging.info(options)
+    logging.info(__version__)
     logging.info(current_dir)
+
+    if options.module == "help":
+        pprint.pprint([
+            "gcp",
+            "gcp.init_machine_template",
+            "server.ubuntu.init_docker",
+            "server.ubuntu.add_docker_group"
+        ])
+
     if options.module == "gcp":
         gcp.main(options.query)
-    if options.module == "version":
-        logging.info(__version__)
+    if options.module == "gcp.init_machine_template":
+        gcp.init_machine_template()
     if options.module == "server.ubuntu.init_docker":
         server_ubuntu.init_docker()
-
     if options.module == "server.ubuntu.add_docker_group":
         server_ubuntu.add_docker_group()
 
