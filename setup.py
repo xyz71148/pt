@@ -1,5 +1,5 @@
 import re
-from setuptools import setup
+from setuptools import setup,find_packages
 
 with open('pt/__init__.py', 'r') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
@@ -14,23 +14,9 @@ setup(
     author_email='xyz71148@gmail.com',
     description='pt',
     long_description=__doc__,
-    packages=[
-        'pt',
-        'pt.libs',
-        'pt.libs.block_chain',
-        'pt.libs.flask_httpauth',
-        'pt.libs.flask_jwt',
-        'pt.libs.payment',
-        'pt.apps.gcp',
-        'pt.apps.ws',
-        'pt.apps.chat',
-        'pt.apps.chat.templates',
-        'pt.apps.server'
-    ],
+    packages=find_packages(),
     package_data={
-        "pt1": ["apps/chat/templates/*.html","test1/*.json"],
-
-        "pt": [ "test1/*.json"]
+        '': ['*.html', '*.json'],
     },
     zip_safe=False,
     platforms='any',
