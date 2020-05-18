@@ -36,6 +36,7 @@ def main():
 
     if options.module == "help":
         pprint.pprint([
+            "update",
             "gcp",
             "gcp.init_machine_template",
             "server.ubuntu.init_docker",
@@ -44,6 +45,9 @@ def main():
 
     if options.module == "gcp":
         gcp.main(options.query)
+    if options.module == "update":
+        os.system("sudo pip3 install git+https://github.com/xyz71148/pt")
+        os.system("pt")
     if options.module == "gcp.init_machine_template":
         gcp.init_machine_template()
     if options.module == "server.ubuntu.init_docker":
