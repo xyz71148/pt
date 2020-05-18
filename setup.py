@@ -28,7 +28,7 @@ setup(
         'pt.apps.server'
     ],
     package_data={
-        "pt": [ "test1/*.json","apps/chat/templates/*.html"]
+        "pt": ["apps/chat/templates/*.html"]
     },
     zip_safe=False,
     platforms='any',
