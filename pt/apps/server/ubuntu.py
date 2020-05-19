@@ -24,7 +24,7 @@ sudo apt-get install -y curl git expect docker-ce docker-ce-cli containerd.io
 # Make sure docker service is running
 sudo service docker start
 
-sudo docker pull sanfun/public:shadowsocks-v1
+sudo docker pull sanfun/public:shadowsocks-v1 busybox kylemanna/openvpn
 # Test docker installation
 sudo docker ps
 """

@@ -19,18 +19,17 @@ You can install this package as usual with pip:
     source venv/bin/activate
     pip install -r requirements.txt
     
-    python setup.py register
-    python setup.py check
-    python setup.py sdist
-    python setup.py upload
-    python setup.py register sdist upload
+    pip3 install twine
+    python3 setup.py sdist bdist_wheel
+    
+    twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+    twine upload dist/*
+    
+    python3 setup.py check
+    python3 setup.py sdist upload
 
 ## init gcp template
 
     sudo apt-get install -y python3-pip
     sudo pip3 install git+https://github.com/xyz71148/pt
     sudo pt -m server.ubuntu.init_docker
-    
-    
-    alias vpn='cd ~/data/bin && chmod +x y-deng.darwin.amd64.v1.0 && sudo ./y-deng.darwin.amd64.v1.0'
-    alias oss='curl http://jie8.cc/f/p-oss'

@@ -5,9 +5,8 @@ with open('pt/__init__.py', 'r') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         f.read(), re.MULTILINE).group(1)
 
-
 setup(
-    name='pt',
+    name='pt-py',
     version=version,
     url='https://github.com/xyz71148/pt.git',
     license='MIT',
@@ -23,11 +22,27 @@ setup(
         'pt.libs.flask_jwt',
         'pt.libs.payment',
         'pt.apps.gcp',
+        'pt.apps.ws',
+        'pt.apps.chat',
+        'pt.apps.chat.templates',
         'pt.apps.server'
     ],
+    package_data={
+        "pt": ["apps/chat/templates/*.html"]
+    },
     zip_safe=False,
     platforms='any',
-    install_requires=[],
+    install_requires=[
+        "simplejson",
+        "requests",
+        "google-cloud-ndb",
+        "web3",
+        "jwt",
+        "paypalrestsdk",
+        "websockets",
+        "flask",
+        "flask_socketio"
+    ],
     tests_require=[
         'coverage'
     ],

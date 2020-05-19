@@ -30,9 +30,23 @@ def set_logging_system_output(level=logging.INFO):
     rootLogger.addHandler(consoleHandler)
     rootLogger.setLevel(level)
 
+def set_logging_file(level,path):
+    logFormatter = logging.Formatter('[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+                                 '%m-%d %H:%M:%S')
+    fh = logging.FileHandler(path)
+    fh.setFormatter(logFormatter)
+
+    if level== "debug":
+        fh.setLevel(logging.DEBUG)
+    else:
+        fh.setLevel(logging.INFO)
+    rootLogger = logging.getLogger()
+    rootLogger.addHandler(fh)
+
 
 def set_logging(level=logging.INFO):
-    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+    logFormatter = logging.Formatter('[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+                                 '%m-%d %H:%M:%S')
     rootLogger = logging.getLogger()
     consoleHandler = logging.StreamHandler()
     consoleHandler.setFormatter(logFormatter)
