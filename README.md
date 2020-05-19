@@ -26,7 +26,7 @@ You can install this package as usual with pip:
     twine upload dist/*
     
     python3 setup.py check
-    python3 setup.py  sdist upload
+    python3 setup.py sdist upload
 
 ## init gcp template
 

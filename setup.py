@@ -6,7 +6,7 @@ with open('pt/__init__.py', 'r') as f:
                         f.read(), re.MULTILINE).group(1)
 
 setup(
-    name='pt',
+    name='pt-py',
     version=version,
     url='https://github.com/xyz71148/pt.git',
     license='MIT',
