@@ -90,7 +90,7 @@ class Gcp():
         try:
             res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
             logging.debug(res.text)
-            if r.status_code != 200:
+            if res.status_code != 200:
                 raise Exception("get_instance_info system error")
             res_json = res.json()
             if res_json.code != 200:
