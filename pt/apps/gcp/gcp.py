@@ -87,27 +87,22 @@ class Gcp():
 
     def get_instance_info(self):
         logging.debug("get_instance_info: %s", self.url_boot)
-        try:
-            res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
-            logging.debug(res.text)
-            if res.status_code != 200:
-                raise Exception("get_instance_info system error")
-            res_json = res.json()
-            if res_json['code'] != 200:
-                raise Exception("get_instance_info error: "+json.dumps(res_json))
-            self.instance = res_json['body']
-            if self.email is None:
-                self.email = res_json['body']['email']
-                logging.info("email: %s", self.email)
-            self.server_type = res_json['body']['server_type']
-            self.init_scripts = res_json['body']['init_scripts']
-            self.instance_ports_config = res_json['body']['config']
-            self.port_password = res_json['body']['config']['port_password']
-            return res_json['body']
-        except Exception as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
-            self.report_error(e, msg)
+        res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
+        logging.debug(res.text)
+        if res.status_code != 200:
+            raise Exception("get_instance_info system error")
+        res_json = res.json()
+        if res_json['code'] != 200:
+            raise Exception("get_instance_info error: " + json.dumps(res_json))
+        self.instance = res_json['body']
+        if self.email is None:
+            self.email = res_json['body']['email']
+            logging.info("email: %s", self.email)
+        self.server_type = res_json['body']['server_type']
+        self.init_scripts = res_json['body']['init_scripts']
+        self.instance_ports_config = res_json['body']['config']
+        self.port_password = res_json['body']['config']['port_password']
+        return res_json['body']
 
     @classmethod
     def report_error(self, e, error):
