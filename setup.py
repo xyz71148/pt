@@ -37,7 +37,6 @@ setup(
         "requests",
         "web3",
         "jwt",
-        "paypalrestsdk",
         "websockets",
         "flask",
         "flask_socketio"
