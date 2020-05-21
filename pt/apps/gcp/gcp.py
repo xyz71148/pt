@@ -93,7 +93,7 @@ class Gcp():
             if res.status_code != 200:
                 raise Exception("get_instance_info system error")
             res_json = res.json()
-            if res_json.code != 200:
+            if res_json['code'] != 200:
                 raise Exception("get_instance_info error: "+res_json.msg)
             self.instance = res_json['body']
             if self.email is None:
