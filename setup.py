@@ -35,7 +35,6 @@ setup(
     install_requires=[
         "simplejson",
         "requests",
-        "google-cloud-ndb",
         "web3",
         "jwt",
         "paypalrestsdk",
