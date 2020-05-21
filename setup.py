@@ -34,12 +34,7 @@ setup(
     platforms='any',
     install_requires=[
         "simplejson",
-        "requests",
-        "web3",
-        "jwt",
-        "websockets",
-        "flask",
-        "flask_socketio"
+        "requests"
     ],
     tests_require=[
         'coverage'
