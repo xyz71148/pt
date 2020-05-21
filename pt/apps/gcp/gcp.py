@@ -65,6 +65,7 @@ class Gcp():
     http_server_port = None
     http_server_check_port = None
     host_ip = None
+    email = None
 
     def __init__(self, query):
         logging.debug(query)
@@ -89,8 +90,15 @@ class Gcp():
         try:
             res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
             logging.debug(res.text)
+            if r.status_code != 200:
+                raise Exception("get_instance_info system error")
             res_json = res.json()
+            if res_json.code != 200:
+                raise Exception("get_instance_info error: "+res_json.msg)
             self.instance = res_json['body']
+            if self.email is None:
+                self.email = res_json['body']['email']
+                logging.info("email: %s", self.email)
             self.server_type = res_json['body']['server_type']
             self.init_scripts = res_json['body']['init_scripts']
             self.instance_ports_config = res_json['body']['config']
@@ -104,14 +112,17 @@ class Gcp():
     @classmethod
     def report_error(self, e, error):
         logging.error(error)
+        if self.email is None:
+            return
         try:
             requests.put("{}//api/utils/email".format(self.base_url),
-                     dict(email=self.instance['email'], title=e, content=error),
+                     dict(email=self.email, title=e, content=error),
                      auth=(self.base_username, self.base_password))
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
             logging.error(msg)
+
     def shell_run(self, cmd, raise_error=False):
         env = dict(os.environ, host_ip=self.host_ip, base_url=self.base_url, base_username=self.base_username,
                    base_password=self.base_password, instance_name=self.instance_name)
@@ -252,17 +263,17 @@ class Gcp():
         while True:
             try:
                 if init is False:
-                    init = True
                     self.init_instance()
+                    init = True
                 if int(time.time()) % 3600 == 0:
                     logging.info("checking instance")
                 self.check()
-                time.sleep(1)
+                time.sleep(2)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "{},{},{}".format(exc_type,exc_value,traceback.format_tb(exc_traceback))
                 self.report_error(e, msg)
-                time.sleep(10)
+                time.sleep(30)
 
 
 def main(query):
