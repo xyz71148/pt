@@ -249,7 +249,7 @@ class Gcp():
             output = self.shell_run(cmd)
             r = requests.put("{}/api/compute/instance/cmd/result/{}".format(self.base_url, self.instance_name),
                              dict(cmd_result=output), auth=(self.base_username, self.base_password))
-            logging.info(r.text)
+            logging.info("cmd report result: %s", r.text)
 
         if self.server_type == "shadowsocks":
             instance_ports_config = utils.file_read(self.path_shadowsocks_server_json)
