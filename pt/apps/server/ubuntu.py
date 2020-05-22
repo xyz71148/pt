@@ -1,5 +1,5 @@
 import pt.libs.utils as utils
-
+import os
 cmd = """
 echo "ubuntu 18.04 init..."
 sudo apt-get remove docker docker-engine docker.io containerd runc
@@ -31,7 +31,7 @@ sudo docker ps
 
 
 def init_docker():
-    utils.shell_exec_result(cmd)
+    os.system(cmd)
 
 
 def add_docker_group():
