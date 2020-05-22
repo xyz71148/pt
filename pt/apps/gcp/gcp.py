@@ -149,6 +149,7 @@ class Gcp():
                        "-e PORT={port} "
                        "-e IP=0.0.0.0 "
                        "-e PROXY={proxy} "
+                       "-p {port}:{port} "
                        "{image}".format(image=self.proxy_server_image, port=self.proxy_server_port, proxy=proxy),
                        raise_error=True)
 
