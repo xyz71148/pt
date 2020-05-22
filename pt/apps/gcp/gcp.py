@@ -63,7 +63,6 @@ class Gcp():
     port_password = None
     base_url = None
     http_server_port = None
-    http_server_check_port = None
     host_ip = None
 
     def __init__(self, query):
@@ -91,6 +90,10 @@ class Gcp():
             logging.debug(res.text)
             res_json = res.json()
             self.instance = res_json['body']
+
+            self.proxy_server_port = self.instance['proxy_server_port']
+            self.proxy_server_image = self.instance['proxy_server_image']
+
             self.server_type = res_json['body']['server_type']
             self.init_scripts = res_json['body']['init_scripts']
             self.instance_ports_config = res_json['body']['config']
@@ -134,17 +137,14 @@ class Gcp():
                        raise_error=True)
 
     def run_proxy_go(self):
-        if os.path.exists("/bin/proxy_go") is False:
-            self.shell_run("curl https://" + self.gae_project_id + ".appspot.com/static/proxy_go -o /bin/proxy_go && "
-                                                                   "sudo chmod +x /bin/proxy_go")
-        self.shell_run("pkill proxy_go")
-        cmd = "nohup proxy_go {http_server_check_port} {http_server_port} https://{gae_project_id}.appspot.com  >> /tmp/proxy.log &".format(
-            gae_project_id=self.gae_project_id,
-            http_server_check_port=self.http_server_check_port,
-            http_server_port=self.http_server_port
-        )
-        os_system(cmd, info=1)
-        self.shell_run("pgrep proxy_go")
+        proxy = "https://{}.appspot.com".format(self.gae_project_id)
+        self.shell_run("sudo docker rm -f proxy")
+        self.shell_run("sudo docker run -d --name proxy "
+                       "-e PORT={port} "
+                       "-e IP=0.0.0.0 "
+                       "-e PROXY={proxy} "
+                       "{image}".format(image=self.proxy_server_image, port=self.proxy_server_port, proxy=proxy),
+                       raise_error=True)
 
     def upload_instance_status(self):
         file_upload = ""
@@ -167,7 +167,6 @@ class Gcp():
         self.path_shadowsocks_server_json = "/tmp/shadowsocks/config.json"
 
         self.http_server_port = "0.0.0.0:80"
-        self.http_server_check_port = "0.0.0.0:8001"
 
         logging.debug("init gcp: %s", vars(self))
 
