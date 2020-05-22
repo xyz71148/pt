@@ -34,14 +34,7 @@ setup(
     platforms='any',
     install_requires=[
         "simplejson",
-        "requests",
-        "google-cloud-ndb",
-        "web3",
-        "jwt",
-        "paypalrestsdk",
-        "websockets",
-        "flask",
-        "flask_socketio"
+        "requests"
     ],
     tests_require=[
         'coverage'

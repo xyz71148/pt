@@ -64,6 +64,7 @@ class Gcp():
     base_url = None
     http_server_port = None
     host_ip = None
+    email = None
 
     def __init__(self, query):
         logging.debug(query)
@@ -85,36 +86,41 @@ class Gcp():
 
     def get_instance_info(self):
         logging.debug("get_instance_info: %s", self.url_boot)
-        try:
-            res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
-            logging.debug(res.text)
-            res_json = res.json()
-            self.instance = res_json['body']
+        res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
+        logging.debug(res.text)
+        if res.status_code != 200:
+            raise Exception("get_instance_info system error")
+        res_json = res.json()
+        if res_json['code'] != 200:
+            raise Exception("get_instance_info error: " + json.dumps(res_json))
+        self.instance = res_json['body']
+        if self.email is None:
+            self.email = res_json['body']['email']
+            logging.info("email: %s", self.email)
 
-            self.proxy_server_port = self.instance['proxy_server_port']
-            self.proxy_server_image = self.instance['proxy_server_image']
+        self.proxy_server_port = self.instance['proxy_server_port']
+        self.proxy_server_image = self.instance['proxy_server_image']
 
-            self.server_type = res_json['body']['server_type']
-            self.init_scripts = res_json['body']['init_scripts']
-            self.instance_ports_config = res_json['body']['config']
-            self.port_password = res_json['body']['config']['port_password']
-            return res_json['body']
-        except Exception as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
-            self.report_error(e, msg)
+        self.server_type = res_json['body']['server_type']
+        self.init_scripts = res_json['body']['init_scripts']
+        self.instance_ports_config = res_json['body']['config']
+        self.port_password = res_json['body']['config']['port_password']
+        return res_json['body']
 
     @classmethod
     def report_error(self, e, error):
         logging.error(error)
+        if self.email is None:
+            return
         try:
             requests.put("{}//api/utils/email".format(self.base_url),
-                     dict(email=self.instance['email'], title=e, content=error),
+                     dict(email=self.email, title=e, content=error),
                      auth=(self.base_username, self.base_password))
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
             logging.error(msg)
+
     def shell_run(self, cmd, raise_error=False):
         env = dict(os.environ, host_ip=self.host_ip, base_url=self.base_url, base_username=self.base_username,
                    base_password=self.base_password, instance_name=self.instance_name)
@@ -165,8 +171,6 @@ class Gcp():
         self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
         self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks.conf"
         self.path_shadowsocks_server_json = "/tmp/shadowsocks/config.json"
-
-        self.http_server_port = "0.0.0.0:80"
 
         logging.debug("init gcp: %s", vars(self))
 
@@ -237,7 +241,7 @@ class Gcp():
             output = self.shell_run(cmd)
             r = requests.put("{}/api/compute/instance/cmd/result/{}".format(self.base_url, self.instance_name),
                              dict(cmd_result=output), auth=(self.base_username, self.base_password))
-            logging.info(r.text)
+            logging.info("cmd report result: %s", r.text)
 
         if self.server_type == "shadowsocks":
             instance_ports_config = utils.file_read(self.path_shadowsocks_server_json)
@@ -251,17 +255,17 @@ class Gcp():
         while True:
             try:
                 if init is False:
-                    init = True
                     self.init_instance()
+                    init = True
                 if int(time.time()) % 3600 == 0:
                     logging.info("checking instance")
                 self.check()
-                time.sleep(1)
+                time.sleep(2)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "{},{},{}".format(exc_type,exc_value,traceback.format_tb(exc_traceback))
                 self.report_error(e, msg)
-                time.sleep(10)
+                time.sleep(30)
 
 
 def main(query):
