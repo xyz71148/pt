@@ -275,7 +275,7 @@ def main(query):
 
 
 def init_machine_template():
-    if os.path.exists("/swapfile"):
+    if not os.path.exists("/swapfile"):
         os.system("sudo dd if=/dev/zero of=/swapfile bs=1M count=1024")
         os.system("sudo mkswap -f /swapfile")
         os.system("sudo mkswap -f /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile && free -m")
