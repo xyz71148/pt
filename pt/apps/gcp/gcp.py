@@ -275,9 +275,16 @@ def main(query):
 
 
 def init_machine_template():
+    if os.path.exists("/swapfile"):
+        os.system("sudo dd if=/dev/zero of=/swapfile bs=1M count=1024")
+        os.system("sudo mkswap -f /swapfile")
+        os.system("sudo mkswap -f /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile && free -m")
+        os.system("sudo chmod 777 /etc/fstab && sudo echo '/swapfile none swap sw 0 0' >> /etc/fstab && sudo chmod 644 /etc/fstab")
+        os.system("sudo chmod 777 /etc/sysctl.conf && sudo echo 'vm.swappiness=10' >> /etc/sysctl.conf && sudo echo 'vm.vfs_cache_pressure=50' >> /etc/sysctl.conf && sudo chmod 644 /etc/sysctl.conf")
+    os.system("sudo cat /etc/fstab")
+    os.system("sudo cat /etc/sysctl.conf | grep vm.")
     os.system("sudo rm -rf /opt/openvpn /tmp/*.py /tmp/*.log /tmp/*.sh /tmp/shadowsocks")
     os.system("sudo docker rm -f $(sudo docker ps -aq)")
-
 
 if __name__ == '__main__':
     utils.set_logging(logging.DEBUG)
