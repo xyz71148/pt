@@ -7,3 +7,10 @@ paypalrestsdk
 websockets
 flask
 flask_socketio
+sqlalchemy
+flask_sqlalchemy
+flask_bootstrap
+flask_cors
+flask_swagger
+flask_caching
+pyjwt

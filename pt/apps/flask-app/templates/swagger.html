@@ -1,0 +1,81 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/swagger-ui/3.24.2/swagger-ui.css">
+
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+
+        body {
+            margin: 0;
+            background: #fafafa;
+        }
+
+        body {
+            margin: 0;
+            background: #fafafa;
+            user-select: none;
+        }
+
+        span, .parameter__name {
+            user-select: text;
+        }
+    </style>
+    <script language="javascript">
+        document.onkeydown = function (event) {
+            if ((event.ctrlKey || event.metaKey) && event.keyCode === 82) {
+                event.keyCode = 0;
+                event.returnValue = false;
+                document.querySelector("button.download-url-button").click();
+            }
+        };
+    </script>
+</head>
+
+<body>
+<div id="swagger-ui"></div>
+
+<script src="https://cdn.bootcss.com/swagger-ui/3.24.2/swagger-ui-bundle.js"></script>
+<script src="https://cdn.bootcss.com/swagger-ui/3.24.2/swagger-ui-standalone-preset.js"></script>
+<script>
+    window.onload = function () {
+
+        // Begin Swagger UI call region
+        const ui = SwaggerUIBundle({
+            "dom_id": "#swagger-ui",
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            layout: "StandaloneLayout",
+            validatorUrl: "https://validator.swagger.io/validator",
+            url: "{{ swagger_api_url }}",
+        })
+
+
+        // End Swagger UI call region
+
+
+        window.ui = ui
+    }
+</script>
+</body>
+</html>
