@@ -12,12 +12,11 @@ def get_basic_auth():
 
 @basic_auth.get_password
 def get_password(username):
+    auth = Setting.rows("base-auth")
+    if auth and username in auth.keys():
+        return auth[username]
     if username == Setting.get("BASIC_AUTH_USERNAME", default="admin", update=True):
         return Setting.get("BASIC_AUTH_PASSWORD", default="admin888", update=True)
-    if username == Setting.get("BASIC_AUTH_USERNAME_1", default="user", update=True):
-        return Setting.get("BASIC_AUTH_PASSWORD_1", default="user888", update=True)
-    if username == Setting.get("BASIC_AUTH_USER_NAME_STARTUP_SERVER", default="user", update=True):
-        return Setting.get("BASIC_AUTH_PASSWORD_STARTUP_SERVER", default="user888", update=True)
     return None
 
 

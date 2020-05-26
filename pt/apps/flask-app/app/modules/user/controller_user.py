@@ -20,7 +20,7 @@ def me():
      200:
        description: ok
     """
-    return jsonify({"code": 200, "msg": "", "body": User.toDict(current_identity)})
+    return jsonify({"code": 200, "msg": "", "body": User.to_dict(current_identity)})
 
 
 @app.route('/api/token/refresh', methods=['post'])

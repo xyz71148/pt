@@ -1,27 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
-
+from app.helpers.base_model import BaseModel
 db = SQLAlchemy()
 
-class BaseModel(object):
-    @classmethod
-    def row(cls, row_id):
-        res = cls.query.filter(cls.id == int(row_id)).first()
-        return res if res is not None else None
 
-    @staticmethod
-    def toDict(obj):
-        res = dict()
-        for key in vars(obj).keys():
-            if key[0:1] != "_":
-                res[key] = vars(obj)[key]
-        return res
-
-    @staticmethod
-    def put(obj):
-        db.session.add(obj)
-        db.session.commit()
-
-class User(db.Model,BaseModel):
+class User(db.Model, BaseModel):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100),unique=True,index=True)
@@ -39,3 +21,7 @@ class User(db.Model,BaseModel):
         res = cls.query.filter(cls.email == email).first()
         return res if res is not None else None
 
+    @staticmethod
+    def put(obj):
+        db.session.add(obj)
+        db.session.commit()

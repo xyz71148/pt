@@ -55,7 +55,7 @@ def upload_var(key):
       - name: key
         in: path
         required: true
-        description:   constant.json | setting.json
+        description:   constant.json | setting.json | base-auth.json
       - name: files
         in: formData
         type: file
@@ -69,7 +69,7 @@ def upload_var(key):
     if key in [
         "constant.json",
         "setting.json",
-        "p-boot.py",
+        "base-auth.json"
     ]:
         Var.del_cache(key)
         Var.set(key, val)

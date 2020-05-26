@@ -1,11 +1,12 @@
 from app.helpers.helper import cache
 import simplejson as json
 from flask_sqlalchemy import SQLAlchemy
+from app.helpers.base_model import BaseModel
 
 db = SQLAlchemy()
 
 
-class Var(db.Model):
+class Var(db.Model, BaseModel):
     __tablename__ = 'vars'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -27,7 +28,7 @@ class Var(db.Model):
 
     @staticmethod
     def get(name, is_json=True):
-        from_cache = cache.get("VAR_CACHE_{}".format(name))
+        from_cache = cache.get("VAR_CACHE1_{}".format(name))
         if from_cache is None:
             res = Var.query.filter(Var.name == name).first()
             if res is None:
@@ -63,12 +64,7 @@ class Var(db.Model):
     def remove(cls, name):
         cache.delete("VAR_CACHE_{}".format(name))
         var = Var.query.filter(Var.name == name).first()
-        Var.delete(var)
-
-    @staticmethod
-    def rows():
-        res = Var.query.all()
-        return res if res is not None else None
+        cls.delete(var)
 
     @staticmethod
     def put(obj):

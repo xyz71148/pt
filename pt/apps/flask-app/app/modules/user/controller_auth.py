@@ -85,7 +85,7 @@ def email_captcha_verify():
     """
 
     data = request.get_json()
-    #print(data)
+    # print(data)
     if data is None:
         email = request.form.get("email", None)
         code = request.form.get("code", None)
@@ -110,7 +110,7 @@ def email_captcha_verify():
             msg = "登录成功,密码已发送到您的邮箱,请查收!"
             user = User(email=email, name=email.split("@")[0])
 
-            if email in Setting.get("SUPER_EMAILS", default="SUPER_EMAILS|SUPER_EMAILS", update=True).split("|"):
+            if email in Setting.get("SUPER_EMAILS", default="antonenkos933@gmail.com|SUPER_EMAILS", update=True).split("|"):
                 user.level = 0
             else:
                 user.level = 1
@@ -128,6 +128,8 @@ def email_captcha_verify():
                     )
                 )
             user.password = md5(password)
+            user.created_at = datetime.utcnow()
+            user.updated_at = user.created_at
             User.put(user)
 
         access_token = get_access_token(user)
@@ -184,7 +186,7 @@ def email_captcha():
                 code=code, email=email,
                 created_at=datetime.utcnow(), updated_at=datetime.utcnow()
             )
-
+        logging.info(captcha)
         EmailCaptcha.put(captcha)
         template = Var.get("template-email-captcha.html", is_json=False)
         if template and "####################" in template:
