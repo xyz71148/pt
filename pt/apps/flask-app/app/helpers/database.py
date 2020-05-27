@@ -1,5 +1,5 @@
 
-from app.modules.var.store import db as var_db
+from app.modules.var.store_var import db as var_db
 from app.modules.user.store_user import db as store_user_db
 from app.modules.user.store_email_captcha import db as store_email_captcha_db
 

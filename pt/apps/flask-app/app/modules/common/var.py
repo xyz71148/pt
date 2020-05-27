@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from app.helpers.auth import basic_auth
-from ..var.store import Var
+from ..var.store_var import Var
 
 app = Blueprint('var.api', __name__)
 

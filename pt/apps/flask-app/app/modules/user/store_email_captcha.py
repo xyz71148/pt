@@ -1,8 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
+from app.helpers.base_model import BaseModel
+
 db = SQLAlchemy()
 
 
-class EmailCaptcha(db.Model):
+class EmailCaptcha(db.Model,BaseModel):
     __tablename__ = 'email_captcha'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), nullable=False)
@@ -15,15 +17,9 @@ class EmailCaptcha(db.Model):
 
     @classmethod
     def get_by_email(cls, email):
-        res = cls.query.filter(cls.email == email).first()
+        res = cls.get_query().filter(cls.email == email).first()
         return res if res is not None else None
 
     @staticmethod
-    def put(obj):
-        db.session.add(obj)
-        db.session.commit()
-
-    @staticmethod
-    def delete(obj):
-        db.session.delete(obj)
-        db.session.commit()
+    def get_db():
+        return db

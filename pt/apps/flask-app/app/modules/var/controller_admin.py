@@ -1,7 +1,7 @@
 import flask
 from pt.libs.flask_jwt import jwt_required, current_identity
 
-from .store import Var as Model
+from .store_var import Var as Model
 
 app = flask.Blueprint('admin.var', __name__)
 
@@ -66,11 +66,10 @@ def row(var_id):
 
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
-    body = Model.to_dict(obj)
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": body
+        "body": obj.to_dict()
     })
 
 
@@ -105,17 +104,17 @@ def post():
     for field in json_data.keys():
         setattr(obj, field, json_data[field])
 
-    obj = Model.put(obj)
+    obj.save()
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": Model.to_dict(obj)
+        "body": obj.to_dict()
     })
 
 
 @app.route('/api/admin/var/<var_id>', methods=['PUT'])
 @jwt_required()
-def put(var_id):
+def save(var_id):
     """
     change a var
     ---
@@ -148,11 +147,11 @@ def put(var_id):
     for field in json_data.keys():
         setattr(obj, field, json_data[field])
 
-    obj = Model.put(obj)
+    obj.save()
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": Model.to_dict(obj)
+        "body": obj.to_dict()
     })
 
 
@@ -184,10 +183,10 @@ def remove(var_id, action):
         return flask.jsonify(dict(code=404, msg=""))
 
     if action == "remove":
-        Model.remove(obj)
+        obj.remove()
 
     if action == "delete":
-        Model.delete(obj)
+        obj.delete()
 
     return flask.jsonify({
         "code": 200,

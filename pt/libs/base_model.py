@@ -2,7 +2,13 @@ from datetime import datetime
 from sqlalchemy import desc, asc
 import logging
 
+
 class BaseModel(object):
+
+    @classmethod
+    def get_query(cls):
+        return cls.query
+
     @classmethod
     def row(cls, row_id):
         res = cls.query.filter(cls.id == int(row_id)).first()
@@ -23,8 +29,9 @@ class BaseModel(object):
 
         filter_by = dict()
 
-        if "is_deleted" in vars(cls).keys():
-            filter_by["is_deleted"] = False if is_deleted == "false" else True
+        # if "is_deleted" in vars(cls).keys():
+        #     filter_by["is_deleted"] = False if is_deleted == "false" else True
+        #
         filter_by = cls.get_filter_by(filter_by,kwargs)
 
         total = cls.query.filter_by(**filter_by).count()
@@ -38,9 +45,8 @@ class BaseModel(object):
             order=order,
         )
 
-    @staticmethod
-    def get_id(obj):
-        return obj.id
+    def get_id(self):
+        return self.id
 
     @classmethod
     def get_filter_by(cls,filter_by,kwargs):
@@ -51,39 +57,36 @@ class BaseModel(object):
     def skip_dict_field(cls):
         return []
 
-    @classmethod
-    def to_dict(cls,obj):
+    def to_dict(self):
         res = dict()
-        for key in vars(obj).keys():
-            if key in cls.skip_dict_field():
+        for key in vars(self).keys():
+            if key in self.skip_dict_field():
                 continue
             if key[0:1] != "_":
-                res[key] = vars(obj)[key]
+                res[key] = vars(self)[key]
         return res
 
-    @classmethod
-    def put(cls, obj):
-        if "created_at" in vars(cls).keys():
-            if not obj.created_at:
-                obj.created_at = datetime.utcnow()
+    def save(self):
+        keys = vars(self.__class__).keys()
+        if "created_at" in keys:
+            if not self.created_at:
+                self.created_at = datetime.utcnow()
 
-        if "updated_at" in vars(cls).keys():
-            obj.updated_at = datetime.utcnow()
+        if "updated_at" in keys:
+            self.updated_at = datetime.utcnow()
 
-        if "is_deleted" in vars(cls).keys():
-            obj.is_deleted = False if not obj.is_deleted else True
+        if "is_deleted" in keys:
+            self.is_deleted = False if not self.is_deleted else True
 
-        cls.get_db().session.add(obj)
-        cls.get_db().session.commit()
-        return obj
+        self.get_db().session.add(self)
+        self.get_db().session.commit()
+        return self
 
-    @classmethod
-    def delete(cls, obj):
-        obj.is_deleted = True
-        obj = cls.put(obj)
-        return obj
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        return self
 
-    @classmethod
-    def remove(cls, obj):
-        cls.get_db().session.delete(obj)
-        cls.get_db().session.commit()
+    def remove(self):
+        self.get_db().session.delete(self)
+        self.get_db().session.commit()

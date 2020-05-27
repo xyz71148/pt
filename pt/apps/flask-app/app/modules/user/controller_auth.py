@@ -11,7 +11,7 @@ from app.helpers.setting import Setting
 
 from .store_user import User
 from .store_email_captcha import EmailCaptcha
-from ..var.store import Var
+from ..var.store_var import Var
 
 app = Blueprint('user.auth', __name__)
 
@@ -132,10 +132,10 @@ def email_captcha_verify():
             user.password = md5(password)
             user.created_at = datetime.utcnow()
             user.updated_at = user.created_at
-            User.put(user)
+            user.save()
 
         access_token = get_access_token(user)
-        EmailCaptcha.delete(captcha)
+        captcha.remove()
 
         return jsonify({"code": 200, "msg": msg, "body": {
             "user": {
@@ -192,7 +192,7 @@ def email_captcha():
                 created_at=datetime.utcnow(), updated_at=datetime.utcnow()
             )
         logging.info(captcha)
-        EmailCaptcha.put(captcha)
+        captcha.save()
         template = Var.get("template-email-captcha.html", is_json=False)
         if template and "####################" in template:
             title = template.split("")[0].strip()
@@ -241,5 +241,5 @@ def email_auth_set_level():
     if user is None:
         raise Exception("用户不存在", 500)
     user.level = int(level)
-    user = User.put(user)
-    return jsonify({"code": 200, "msg": "", "body": User.to_dict(user)})
+    user.save()
+    return jsonify({"code": 200, "msg": "", "body": user.to_dict()})

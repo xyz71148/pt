@@ -67,11 +67,11 @@ def row(user_id):
 
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
-    body = Model.to_dict(obj)
+
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": body
+        "body": obj.to_dict()
     })
 
 
@@ -108,17 +108,17 @@ def post():
             json_data[field] = md5(json_data[field])
         setattr(obj, field, json_data[field])
 
-    obj = Model.put(obj)
+    obj.save()
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": Model.to_dict(obj)
+        "body": obj.to_dict()
     })
 
 
 @app.route('/api/admin/user/<user_id>', methods=['PUT'])
 @jwt_required()
-def put(user_id):
+def save(user_id):
     """
     change a user
     ---
@@ -152,11 +152,11 @@ def put(user_id):
         if field == "password":
             json_data[field] = md5(json_data[field])
         setattr(obj, field, json_data[field])
-    obj = Model.put(obj)
+    obj.save()
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": Model.to_dict(obj)
+        "body": obj.to_dict()
     })
 
 
@@ -188,10 +188,10 @@ def remove(user_id, action):
         return flask.jsonify(dict(code=404, msg=""))
 
     if action == "remove":
-        Model.remove(obj)
+        obj.remove()
 
     if action == "delete":
-        Model.delete(obj)
+        obj.delete()
 
     return flask.jsonify({
         "code": 200,

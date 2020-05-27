@@ -1,6 +1,6 @@
 from app.helpers.helper import cache
 import simplejson as json
-from app.modules.var.store import Var
+from app.modules.var.store_var import Var
 
 
 class Setting(object):

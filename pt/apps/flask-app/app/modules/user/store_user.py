@@ -20,7 +20,7 @@ class User(db.Model, BaseModel):
 
     @classmethod
     def get_by_email(cls, email):
-        res = cls.query.filter(cls.email == email).first()
+        res = cls.get_query().filter(cls.email == email).first()
         return res if res is not None else None
 
     @classmethod
