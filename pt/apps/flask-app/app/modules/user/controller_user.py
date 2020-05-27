@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from pt.libs.flask_jwt import get_access_token
 from pt.libs.flask_jwt import jwt_required, current_identity
+
 from .store_user import User
 
 app = Blueprint('user', __name__)

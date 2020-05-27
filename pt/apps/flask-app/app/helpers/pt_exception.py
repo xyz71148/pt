@@ -3,6 +3,7 @@ import traceback
 import sys
 import logging
 from werkzeug.exceptions import HTTPException
+
 from app.helpers.setting import Setting
 from .helper import mail_send
 
@@ -24,7 +25,7 @@ class JSONExceptionHandler(object):
             msg = str(exc_value.args[0]) if len(exc_value.args) > 0 else "system error"
             code = exc_value.args[1] if len(exc_value.args) > 1 else 500
 
-            if not current_app.debug:
+            if current_app and not current_app.debug:
                 log = "msg: {},type:{},trace: {}".format(exc_value, exc_type, traceback.format_tb(exc_traceback))
                 logging.error(log)
                 body = []

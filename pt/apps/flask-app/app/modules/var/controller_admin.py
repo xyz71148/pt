@@ -1,5 +1,6 @@
 import flask
 from pt.libs.flask_jwt import jwt_required, current_identity
+
 from .store import Var as Model
 
 app = flask.Blueprint('admin.var', __name__)
@@ -146,6 +147,7 @@ def put(var_id):
 
     for field in json_data.keys():
         setattr(obj, field, json_data[field])
+
     obj = Model.put(obj)
     return flask.jsonify({
         "code": 200,

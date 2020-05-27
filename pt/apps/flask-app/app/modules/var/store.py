@@ -1,6 +1,7 @@
 from app.helpers.helper import cache
 import simplejson as json
 from flask_sqlalchemy import SQLAlchemy
+
 from app.helpers.base_model import BaseModel
 
 db = SQLAlchemy()

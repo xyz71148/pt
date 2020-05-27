@@ -69,7 +69,7 @@ def upload_var(key):
     if key in [
         "constant.json",
         "setting.json",
-        "base-auth.json"
+            "base-auth.json"
     ]:
         Var.del_cache(key)
         Var.set(key, val)

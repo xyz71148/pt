@@ -1,5 +1,6 @@
 from flask import jsonify, Blueprint, render_template
-from app.libs import utils
+from pt.libs import utils
+
 from app.helpers.setting import Setting
 
 app = Blueprint('swagger', __name__)

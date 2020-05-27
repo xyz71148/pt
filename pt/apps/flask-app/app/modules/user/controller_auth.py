@@ -2,14 +2,15 @@ from flask import Blueprint, request, jsonify,current_app
 import random
 import logging
 from datetime import datetime, timedelta
-from .store_email_captcha import EmailCaptcha
-from app.helpers.setting import Setting
-from pt.libs.utils import check_email
-from app.helpers.helper import mail_send
+from pt.libs.utils import generate_random, md5,check_email
 from pt.libs.flask_jwt import get_access_token
+
 from app.helpers.auth import basic_auth
-from app.libs.utils import generate_random, md5
+from app.helpers.helper import mail_send
+from app.helpers.setting import Setting
+
 from .store_user import User
+from .store_email_captcha import EmailCaptcha
 from ..var.store import Var
 
 app = Blueprint('user.auth', __name__)

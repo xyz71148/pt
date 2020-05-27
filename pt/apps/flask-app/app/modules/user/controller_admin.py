@@ -1,6 +1,7 @@
 import flask
 from pt.libs.utils import md5
 from pt.libs.flask_jwt import jwt_required, current_identity
+
 from .store_user import User as Model
 
 app = flask.Blueprint('admin.user', __name__)
