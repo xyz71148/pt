@@ -44,7 +44,7 @@ setup(
     entry_points={
         'console_scripts': [
             'pt=pt.cmd:main',
-            'pt-app=pt.apps.flask-app.server:create_app'
+            #'pt-app=pt.apps.flask-app.server:create_app'
         ],
     },
     classifiers=[
