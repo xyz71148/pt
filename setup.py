@@ -25,7 +25,8 @@ setup(
         'pt.apps.ws',
         'pt.apps.chat',
         'pt.apps.chat.templates',
-        'pt.apps.server'
+        'pt.apps.server',
+        'pt.apps.flask-app'
     ],
     package_data={
         "pt": ["apps/chat/templates/*.html"]
@@ -42,7 +43,8 @@ setup(
     test_suite='test_pt',
     entry_points={
         'console_scripts': [
-            'pt=pt.cmd:main'
+            'pt=pt.cmd:main',
+            'pt-app=pt.apps.flask-app.server:create_app'
         ],
     },
     classifiers=[

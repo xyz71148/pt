@@ -1,10 +1,12 @@
 import flask
-
+import logging
 app = flask.Blueprint('common', __name__)
 
 
 @app.route('/err', methods=['GET'])
 def err():
+    logging.info("==>>info")
+    logging.debug("==>>debug")
     raise Exception("error", 505)
 
 

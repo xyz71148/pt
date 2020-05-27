@@ -1,14 +1,10 @@
-from flask import jsonify
+from flask import jsonify,current_app
 import traceback
 import sys
 import logging
 from werkzeug.exceptions import HTTPException
 from app.helpers.setting import Setting
 from .helper import mail_send
-
-
-def is_prod():
-    return False
 
 
 class JSONExceptionHandler(object):
@@ -28,7 +24,7 @@ class JSONExceptionHandler(object):
             msg = str(exc_value.args[0]) if len(exc_value.args) > 0 else "system error"
             code = exc_value.args[1] if len(exc_value.args) > 1 else 500
 
-            if is_prod():
+            if not current_app.debug:
                 log = "msg: {},type:{},trace: {}".format(exc_value, exc_type, traceback.format_tb(exc_traceback))
                 logging.error(log)
                 body = []
