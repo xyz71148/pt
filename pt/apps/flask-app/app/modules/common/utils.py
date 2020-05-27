@@ -11,11 +11,6 @@ from control.compute import mail
 app = Blueprint('utils', __name__)
 
 
-
-
-
-
-
 @app.route('/api/utils/turnserver/auth', methods=['GET'])
 def utils_turnserver_auth():
     """

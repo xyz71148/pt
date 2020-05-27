@@ -1,9 +1,9 @@
 import flask
-from pt.libs.flask_jwt import jwt_required, current_identity
 from pt.libs.utils import md5
-from .store_user import User
+from pt.libs.flask_jwt import jwt_required, current_identity
+from .store_user import User as Model
 
-app = flask.Blueprint('admin.user.admin', __name__)
+app = flask.Blueprint('admin.user', __name__)
 
 
 @app.route('/api/admin/users', methods=['GET'])
@@ -33,41 +33,12 @@ def rows():
       200:
         description: ok
     """
-
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    page = flask.request.args.get('page', "1")
-    limit = flask.request.args.get('limit', "10")
-    order = flask.request.args.get('order', "-created_at")
-
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": User.rows(page=page, limit=limit, order=order)
-    })
-
-
-@app.route('/api/admin/user/fields', methods=['GET'])
-@jwt_required()
-def fields():
-    """
-    get user fields
-    ---
-    security:
-      - apiKeyAuth : []
-    tags:
-      - admin/user
-    responses:
-      200:
-        description: ok
-    """
-    if current_identity.level != 0:
-        return flask.jsonify({"code": 403, "body": []})
-
-    return flask.jsonify({
-        "code": 200,
-        "msg": "",
-        "body": User.get_fields()
+        "body": Model.rows(**flask.request.args)
     })
 
 
@@ -91,64 +62,15 @@ def row(user_id):
     """
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    obj = User.row(user_id)
+    obj = Model.row(user_id)
+
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
-
-    body = User.get_detail(obj)
-
+    body = Model.to_dict(obj)
     return flask.jsonify({
         "code": 200,
         "msg": "",
         "body": body
-    })
-
-
-@app.route('/api/admin/user/checkout/<user_id>/<flag>', methods=['GET'])
-@jwt_required()
-def rows_checkout(user_id, flag):
-    """
-    checkout
-    ---
-    security:
-      - apiKeyAuth : []
-    tags:
-      - admin/user
-    parameters:
-      - name: user_id
-        in: path
-        required: true
-      - name: flag
-        in: path
-        required: true
-        description: gold | silver | copper
-      - name: page
-        in: query
-        default: 1
-        required: true
-      - name: limit
-        in: query
-        default: 10
-        required: true
-      - name: order
-        in: query
-        default: -created_at
-        required: true
-    responses:
-      200:
-        description: ok
-    """
-    if current_identity.level != 0:
-        return flask.jsonify({"code": 403, "body": []})
-
-    page = flask.request.args.get('page', "1")
-    limit = flask.request.args.get('limit', "10")
-    order = flask.request.args.get('order', "-created_at")
-
-    return flask.jsonify({
-        "code": 200,
-        "msg": "",
-        "body": CheckOut.rows_by_user_id_flag(user_id, flag, page=page, limit=limit, order=order)
     })
 
 
@@ -178,15 +100,18 @@ def post():
 
     json_data = flask.request.json.get("data", dict())
 
-    obj = User()
+    obj = Model()
+
     for field in json_data.keys():
-        value = json_data[field]
-        setattr(obj, field, value)
-    obj.put()
+        if field == "password":
+            json_data[field] = md5(json_data[field])
+        setattr(obj, field, json_data[field])
+
+    obj = Model.put(obj)
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": User.get_detail(obj)
+        "body": Model.to_dict(obj)
     })
 
 
@@ -216,32 +141,27 @@ def put(user_id):
     """
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    obj = User.row(user_id)
+    obj = Model.row(user_id)
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
 
     json_data = flask.request.json.get("data", dict())
 
     for field in json_data.keys():
-        value = json_data[field]
-        if field == "level":
-            value = int(value)
         if field == "password":
-            value = md5(value)
-        if field in ["balance_gold", "balance_copper", "balance_silver"]:
-            value = float(value)
-        setattr(obj, field, value)
-    obj.put()
+            json_data[field] = md5(json_data[field])
+        setattr(obj, field, json_data[field])
+    obj = Model.put(obj)
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": User.get_detail(obj)
+        "body": Model.to_dict(obj)
     })
 
 
-@app.route('/api/admin/user/<user_id>', methods=['DELETE'])
+@app.route('/api/admin/user/<user_id>/<action>', methods=['DELETE'])
 @jwt_required()
-def remove(user_id):
+def remove(user_id, action):
     """
     change a user
     ---
@@ -253,17 +173,25 @@ def remove(user_id):
       - name: user_id
         in: path
         required: true
+      - name: action
+        in: path
+        required: true
     responses:
       200:
         description: ok
     """
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    obj = User.row(user_id)
+    obj = Model.row(user_id)
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
-    obj.is_deleted = True
-    obj.put()
+
+    if action == "remove":
+        Model.remove(obj)
+
+    if action == "delete":
+        Model.delete(obj)
+
     return flask.jsonify({
         "code": 200,
         "msg": "",

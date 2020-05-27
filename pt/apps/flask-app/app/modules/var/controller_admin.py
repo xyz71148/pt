@@ -1,6 +1,6 @@
 import flask
 from pt.libs.flask_jwt import jwt_required, current_identity
-from .store import Var
+from .store import Var as Model
 
 app = flask.Blueprint('admin.var', __name__)
 
@@ -34,37 +34,10 @@ def rows():
     """
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    page = flask.request.args.get('page', "1")
-    limit = flask.request.args.get('limit', "10")
-    order = flask.request.args.get('order', "-created_at")
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": Var.rows(page=page, limit=limit,order=order)
-    })
-
-
-@app.route('/api/admin/var/fields', methods=['GET'])
-@jwt_required()
-def fields():
-    """
-    get var fields
-    ---
-    security:
-      - apiKeyAuth : []
-    tags:
-      - admin/var
-    responses:
-      200:
-        description: ok
-    """
-    if current_identity.level != 0:
-        return flask.jsonify({"code": 403, "body": []})
-
-    return flask.jsonify({
-        "code": 200,
-        "msg": "",
-        "body": Var.get_fields()
+        "body": Model.rows(**flask.request.args)
     })
 
 
@@ -88,11 +61,11 @@ def row(var_id):
     """
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    obj = Var.row(var_id)
+    obj = Model.row(var_id)
 
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
-    body = Var.get_detail(obj)
+    body = Model.to_dict(obj)
     return flask.jsonify({
         "code": 200,
         "msg": "",
@@ -125,20 +98,17 @@ def post():
         return flask.jsonify({"code": 403, "body": []})
 
     json_data = flask.request.json.get("data", dict())
-    items = json_data['address'].split("\n")
-    obj = Var()
-    addresses = Var.addresses()
-    rows = []
-    for address in items:
-        if len(address) > 0 and address not in addresses:
-            obj.address = address
-            obj.put()
-            rows.append(address)
 
+    obj = Model()
+
+    for field in json_data.keys():
+        setattr(obj, field, json_data[field])
+
+    obj = Model.put(obj)
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": rows
+        "body": Model.to_dict(obj)
     })
 
 
@@ -168,30 +138,25 @@ def put(var_id):
     """
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    obj = Var.row(var_id)
+    obj = Model.row(var_id)
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
 
     json_data = flask.request.json.get("data", dict())
 
     for field in json_data.keys():
-        if field == "used":
-            value = True if json_data[field] == "true" else False
-        else:
-            value = json_data[field]
-        setattr(obj, field, value)
-
-    obj.put()
+        setattr(obj, field, json_data[field])
+    obj = Model.put(obj)
     return flask.jsonify({
         "code": 200,
         "msg": "",
-        "body": Var.get_detail(obj)
+        "body": Model.to_dict(obj)
     })
 
 
-@app.route('/api/admin/var/<var_id>', methods=['DELETE'])
+@app.route('/api/admin/var/<var_id>/<action>', methods=['DELETE'])
 @jwt_required()
-def remove(var_id):
+def remove(var_id, action):
     """
     change a var
     ---
@@ -203,17 +168,25 @@ def remove(var_id):
       - name: var_id
         in: path
         required: true
+      - name: action
+        in: path
+        required: true
     responses:
       200:
         description: ok
     """
     if current_identity.level != 0:
         return flask.jsonify({"code": 403, "body": []})
-    obj = Var.row(var_id)
+    obj = Model.row(var_id)
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
-    obj.is_deleted = True
-    obj.put()
+
+    if action == "remove":
+        Model.remove(obj)
+
+    if action == "delete":
+        Model.delete(obj)
+
     return flask.jsonify({
         "code": 200,
         "msg": "",

@@ -11,9 +11,12 @@ class Var(db.Model, BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     value = db.Column(db.Text())
+    created_at = db.Column(db.DateTime())
+    updated_at = db.Column(db.DateTime())
+    is_deleted = db.Column(db.Boolean())
 
     def __repr__(self):
-        return '<%s %r>' % (self.__class__.__name__, self.name)
+        return '<%s name=%r id=%d>' % (self.__class__.__name__, self.name,self.id)
 
     @staticmethod
     def get_inc(key):
@@ -60,18 +63,7 @@ class Var(db.Model, BaseModel):
     def del_cache(cls, name):
         cache.delete("VAR_CACHE_{}".format(name))
 
-    @classmethod
-    def remove(cls, name):
-        cache.delete("VAR_CACHE_{}".format(name))
-        var = Var.query.filter(Var.name == name).first()
-        cls.delete(var)
-
     @staticmethod
-    def put(obj):
-        db.session.add(obj)
-        db.session.commit()
+    def get_db():
+        return db
 
-    @staticmethod
-    def delete(obj):
-        db.session.delete(obj)
-        db.session.commit()

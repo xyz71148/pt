@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify,current_app
 import random
 import logging
 from datetime import datetime, timedelta
@@ -7,6 +7,7 @@ from app.helpers.setting import Setting
 from pt.libs.utils import check_email
 from app.helpers.helper import mail_send
 from pt.libs.flask_jwt import get_access_token
+from app.helpers.auth import basic_auth
 from app.libs.utils import generate_random, md5
 from .store_user import User
 from ..var.store import Var
@@ -110,7 +111,7 @@ def email_captcha_verify():
             msg = "登录成功,密码已发送到您的邮箱,请查收!"
             user = User(email=email, name=email.split("@")[0])
 
-            if email in Setting.get("SUPER_EMAILS", default="antonenkos933@gmail.com|SUPER_EMAILS", update=True).split("|"):
+            if email in Setting.get("SUPER_EMAILS", default="SUPER_EMAILS1|SUPER_EMAIL2", update=True).split("|"):
                 user.level = 0
             else:
                 user.level = 1
@@ -176,7 +177,10 @@ def email_captcha():
     if captcha is not None and captcha.created_at + timedelta(minutes=1) > datetime.utcnow():
         raise Exception("验证码已经发送,请一分钟之后再试", 500)
     else:
-        code = str(random.randrange(1000, 9999))
+        if current_app.debug:
+            code = 9999
+        else:
+            code = str(random.randrange(1000, 9999))
         if captcha is not None:
             captcha.code = code
             captcha.created_at = datetime.utcnow()
@@ -198,3 +202,43 @@ def email_captcha():
                 content.format(name=email.split("@")[0])
             )
         return jsonify({"code": 200, "msg": "验证码发送成功,请查收"})
+
+
+@app.route('/api/auth/email/set/level', methods=['post'])
+@basic_auth.login_required
+def email_auth_set_level():
+    """
+    email_auth_set_level
+    ---
+    tags:
+     - auth
+    parameters:
+      - name: email
+        in: formData
+        required: true
+      - name: level
+        in: formData
+        required: true
+        default: 0
+    responses:
+     200:
+       description: ok
+    """
+    data = request.get_json()
+    print(data)
+    if data is None:
+        email = request.form.get("email", None)
+        level = request.form.get("level", None)
+    else:
+        email = data.get("email", None)
+        level = data.get("level", None)
+
+    if not check_email(email):
+        raise Exception("不合法的Email", 500)
+
+    user = User.get_by_email(email)
+    if user is None:
+        raise Exception("用户不存在", 500)
+    user.level = int(level)
+    user = User.put(user)
+    return jsonify({"code": 200, "msg": "", "body": User.to_dict(user)})

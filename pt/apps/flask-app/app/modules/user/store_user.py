@@ -12,6 +12,7 @@ class User(db.Model, BaseModel):
     password = db.Column(db.String(32))
     created_at = db.Column(db.Date())
     updated_at = db.Column(db.Date())
+    is_deleted = db.Column(db.Boolean())
 
     def __repr__(self):
         return '%s (id=%r,name=%r)' % (self.__class__.__name__, self.id,self.name)
@@ -21,7 +22,10 @@ class User(db.Model, BaseModel):
         res = cls.query.filter(cls.email == email).first()
         return res if res is not None else None
 
-    @staticmethod
-    def put(obj):
-        db.session.add(obj)
-        db.session.commit()
+    @classmethod
+    def get_db(cls):
+        return db
+
+    @classmethod
+    def skip_dict_field(cls):
+        return ["password"]

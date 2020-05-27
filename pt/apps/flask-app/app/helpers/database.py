@@ -10,6 +10,11 @@ def init(app):
     store_email_captcha_db.init_app(app)
 
     with app.app_context():
+
+        # var_db.drop_all()
+        # store_user_db.drop_all()
+        # store_email_captcha_db.drop_all()
+
         var_db.create_all()
         store_user_db.create_all()
         store_email_captcha_db.create_all()

@@ -2,7 +2,7 @@ from flask_caching import Cache
 
 cache = Cache(config={
     "CACHE_TYPE": "filesystem",
-    "CACHE_DIR": "/tmp",
+    "CACHE_DIR": "./.cache",
     "CACHE_DEFAULT_TIMEOUT": 300
 })
 
