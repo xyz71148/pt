@@ -29,9 +29,9 @@ class BaseModel(object):
 
         filter_by = dict()
 
-        # if "is_deleted" in vars(cls).keys():
-        #     filter_by["is_deleted"] = False if is_deleted == "false" else True
-        #
+        if "is_deleted" in vars(cls).keys():
+            filter_by["is_deleted"] = False if is_deleted == "false" else True
+
         filter_by = cls.get_filter_by(filter_by,kwargs)
 
         total = cls.query.filter_by(**filter_by).count()
@@ -58,12 +58,19 @@ class BaseModel(object):
         return []
 
     def to_dict(self):
+        logging.info("===>>>>>self: %s",self)
+        logging.info(self)
         res = dict()
+        logging.info(vars(self).keys())
         for key in vars(self).keys():
+            logging.info('key: %s',key)
             if key in self.skip_dict_field():
                 continue
             if key[0:1] != "_":
-                res[key] = vars(self)[key]
+                res[key] = getattr(self, key)
+
+        logging.info(res)
+        logging.info("===>>>>>end")
         return res
 
     def save(self):

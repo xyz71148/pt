@@ -20,21 +20,21 @@ class Var(db.Model, BaseModel):
         return '<%s name=%r id=%d>' % (self.__class__.__name__, self.name,self.id)
     
     @classmethod
-    def get_inc(cls, key):
-        res = cls.get_query().filter(Var.name == key).first()
+    def get_inc(cls, name):
+        res = cls.get_query().filter_by(name = name,is_deleted = False).first()
         if res is not None:
             inc = int(res.value[1:]) + 1
         else:
             inc = 1
         val = "_{}".format(inc)
-        cls.set(key, val)
+        cls.set(name, val)
         return inc
 
     @classmethod
     def get(cls, name, is_json=False):
         from_cache = cache.get("VAR_CACHE1_{}".format(name))
         if from_cache is None:
-            res = cls.get_query().filter(Var.name == name).first()
+            res = cls.get_query().filter_by(name = name,is_deleted = False).first()
             if res is None:
                 value = "{}" if is_json else ""
                 obj = cls(name=name, value=value)
@@ -50,7 +50,7 @@ class Var(db.Model, BaseModel):
 
     @classmethod
     def set(cls, name, value):
-        obj = cls.get_query().filter(Var.name == name).first()
+        obj = cls.get_query().filter_by(name = name,is_deleted = False).first()
         if not obj:
             obj = cls(name=name, value=value)
             obj.save()
