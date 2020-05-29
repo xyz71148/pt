@@ -226,7 +226,6 @@ def email_auth_set_level():
        description: ok
     """
     data = request.get_json()
-    print(data)
     if data is None:
         email = request.form.get("email", None)
         level = request.form.get("level", None)
