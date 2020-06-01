@@ -6,6 +6,10 @@ import logging
 class BaseModel(object):
 
     @classmethod
+    def rows_skip_dict_field(cls):
+        return []
+
+    @classmethod
     def get_query(cls):
         return cls.query
 
@@ -16,11 +20,16 @@ class BaseModel(object):
 
     @classmethod
     def rows(cls, **kwargs):
-        page = kwargs.get('page', "1")
-        limit = kwargs.get('limit', "10")
-        order = kwargs.get('order', "-id")
+        try:
+            page = int(kwargs.get('page', "1"))
+            limit = int(kwargs.get('limit', "1"))
+            order = kwargs.get('order', "-created_at")
+        except Exception as e:
+            page = int(kwargs.get('page', "1")[0])
+            limit = int(kwargs.get('limit', "1")[0])
+            order = kwargs.get('order', "-created_at")[0]
 
-        is_deleted = kwargs.get('is_deleted', "false")
+        is_deleted = "false"
 
         if order[0:1] == "-":
             order_by = desc(getattr(cls, order[1:]))
@@ -35,10 +44,13 @@ class BaseModel(object):
         filter_by = cls.get_filter_by(filter_by,kwargs)
 
         total = cls.query.filter_by(**filter_by).count()
-        rows = cls.query.filter_by(**filter_by).order_by(order_by).limit(int(limit)).offset(int(limit) * (int(page) - 1)).all()
+        if limit == '-1':
+            rows = cls.query.filter_by(**filter_by).order_by(order_by).all()
+        else:
+            rows = cls.query.filter_by(**filter_by).order_by(order_by).limit(int(limit)).offset(int(limit) * (int(page) - 1)).all()
 
         return dict(
-            rows=[cls.to_dict(row) for row in rows] if rows is not None else None,
+            rows=[cls.to_dict(row,form_list=True) for row in rows] if rows is not None else None,
             page=page,
             total=total,
             limit=limit,
@@ -57,20 +69,26 @@ class BaseModel(object):
     def skip_dict_field(cls):
         return []
 
-    def to_dict(self):
+    def to_dict(self,form_list = False):
         logging.info("===>>>>>self: %s",self)
         logging.info(self)
         res = dict()
         logging.info(vars(self).keys())
-        for key in vars(self).keys():
-            logging.info('key: %s',key)
-            if key in self.skip_dict_field():
+        for field in vars(self).keys():
+            logging.info('field: %s',field)
+            if field in self.skip_dict_field():
                 continue
-            if key[0:1] != "_":
-                res[key] = getattr(self, key)
 
-        logging.info(res)
-        logging.info("===>>>>>end")
+            if form_list and field in self.rows_skip_dict_field():
+                continue
+
+            val = getattr(self, field)
+            if field in ["expired_at", "updated_at", "started_at", "created_at"]:
+                val = val.timestamp() if val is not None else 0
+
+            if field[0:1] != "_":
+                res[field] = val
+
         return res
 
     def save(self):

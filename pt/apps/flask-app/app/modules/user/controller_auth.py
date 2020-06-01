@@ -11,7 +11,7 @@ from app.helpers.setting import Setting
 
 from .store_user import User
 from .store_email_captcha import EmailCaptcha
-from ..var.store_var import Var
+from ..var.store import Var
 
 app = Blueprint('user.auth', __name__)
 

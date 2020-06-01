@@ -87,6 +87,14 @@ def url_encode(dic):
     return urlencode(dic)
 
 
+def http_post_decode(data):
+    j = dict()
+    for i in data.split("&"):
+        t = i.split("=")
+        j[t[0]] = unquote(t[1])
+    return j
+
+
 def url_decode_query(url):
     o = urlparse(url)
     j = dict()

@@ -1,7 +1,9 @@
 import flask
 from pt.libs.flask_jwt import jwt_required, current_identity
-
-from .store_var import Var as Model
+import simplejson as json
+from .store import Var as Model
+import mimetypes
+import time
 
 app = flask.Blueprint('admin.var', __name__)
 
@@ -104,6 +106,7 @@ def post():
     for field in json_data.keys():
         setattr(obj, field, json_data[field])
 
+    obj.versions = "{}"
     obj.save()
     return flask.jsonify({
         "code": 200,
@@ -146,8 +149,16 @@ def save(var_id):
 
     for field in json_data.keys():
         setattr(obj, field, json_data[field])
+        if field == 'value':
+            if "versions" in vars(obj).keys():
+                versions = json.loads(obj.versions)
+            else:
+                versions = dict()
+            versions[int(time.time())] = json_data[field]
+            obj.versions = json.dumps(versions)
 
     obj.save()
+    obj.del_cache()
     return flask.jsonify({
         "code": 200,
         "msg": "",
@@ -182,6 +193,8 @@ def remove(var_id, action):
     if obj is None:
         return flask.jsonify(dict(code=404, msg=""))
 
+    obj.del_cache()
+
     if action == "remove":
         obj.remove()
 
@@ -192,4 +205,74 @@ def remove(var_id, action):
         "code": 200,
         "msg": "",
         "body": None
+    })
+
+
+@app.route('/api/admin/var/export', methods=['GET'])
+@jwt_required()
+def export():
+    """
+    export
+    ---
+    security:
+      - apiKeyAuth : []
+    tags:
+      - admin/var
+    responses:
+      200:
+        description: ok
+    """
+    if current_identity.level != 0:
+        return flask.jsonify({"code": 403, "body": []})
+
+    data = Model.rows(limit=-1)
+
+    if data is None:
+        return flask.jsonify(dict(code=404, msg=""))
+
+    file_name = "vars.json"
+    response = flask.make_response(json.dumps(data["rows"]))
+    mime_type = mimetypes.guess_type(file_name)[0]
+    response.headers['Content-Type'] = mime_type
+    response.headers['Content-Disposition'] = 'attachment; filename={}'.format(file_name)
+    return response
+
+
+@app.route('/api/admin/var/import', methods=['POST'])
+@jwt_required()
+def post_import():
+    """
+    post_import
+    ---
+    security:
+      - apiKeyAuth : []
+    tags:
+      - admin/var
+    parameters:
+      - name: files
+        in: formData
+        type: file
+        required: true
+    responses:
+      200:
+        description: ok
+    """
+    if current_identity.level != 0:
+        return flask.jsonify({"code": 403, "body": []})
+    file = flask.request.files['files']
+    val = file.read()
+    try:
+        json_data = json.loads(val)
+    except Exception as e:
+        raise e
+    if str(type(json_data)) != "<class 'list'>":
+        Model.set(json_data['name'], json_data['value'])
+    else:
+        for row in json_data:
+            Model.set(row['name'], row['value'])
+
+    return flask.jsonify({
+        "code": 200,
+        "msg": "",
+        "body": ""
     })

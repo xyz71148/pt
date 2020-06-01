@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from app.helpers.auth import basic_auth
-from ..var.store_var import Var
+from ..var.store import Var
 
 app = Blueprint('var.api', __name__)
 
@@ -55,7 +55,7 @@ def upload_var(key):
       - name: key
         in: path
         required: true
-        description:   constant.json | setting.json | base-auth.json
+        description:   constant.json | setting.json | base-auth.json | navigation.json
       - name: files
         in: formData
         type: file
@@ -69,7 +69,8 @@ def upload_var(key):
     if key in [
         "constant.json",
         "setting.json",
-            "base-auth.json"
+        "navigation.json",
+        "base-auth.json"
     ]:
         Var.del_cache(key)
         Var.set(key, val)
