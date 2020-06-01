@@ -17,6 +17,7 @@ STATUS = dict(
 
 cache_key_template = "TASK_CACHE_{}"
 
+
 class Task(db.Model, BaseModel):
     __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True)
@@ -30,7 +31,7 @@ class Task(db.Model, BaseModel):
     is_deleted = db.Column(db.Boolean())
 
     def __repr__(self):
-        return '<%s name=%r id=%d>' % (self.__class__.__name__, self.name,self.id)
+        return '<%s id=%d>' % (self.__class__.__name__, self.get_id())
 
     @staticmethod
     def get_db():
