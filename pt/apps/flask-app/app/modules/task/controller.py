@@ -40,7 +40,7 @@ def task_handler():
     res = requests.post("https://{}.appspot.com/api/task/result/{}".format(Setting.get("COMPUTE_PROJECT_ID"), task_id), data=dict(
         status=status,
         result=result,
-        executor=os.getenv("TASK_EXECUTOR", "docker")
+        executor=os.getenv("EXECUTOR", "docker")
     ))
     logging.info("upload response code: %d", res.status_code)
     return status
