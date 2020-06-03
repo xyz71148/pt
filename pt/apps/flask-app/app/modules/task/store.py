@@ -100,7 +100,7 @@ class Task(db.Model, BaseModel):
             res = "ok"
         if action == 'shell':
             from app.helpers.setting import Setting
-            res = shell_exec_result("export", **dict(os.environ), **Setting.rows("setting"))
+            res = shell_exec_result(params.format(**Setting.rows()))
         try:
             if action == 'instance.delete':
                 res = json.dumps(get_compute().instances().delete(**params).execute())

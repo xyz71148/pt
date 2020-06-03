@@ -34,5 +34,5 @@ class Setting(object):
             cache.set("SETTING_CACHE_{}".format(namespace), json.dumps(setting))
 
     @staticmethod
-    def rows(namespace):
+    def rows(namespace="setting"):
         return Var.get(namespace + ".json", is_json=True)
