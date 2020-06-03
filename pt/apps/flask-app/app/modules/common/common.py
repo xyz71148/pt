@@ -27,7 +27,7 @@ def check():
 
     url = "https://{}.appspot.com/api/compute/instance/worker/{}".format(
         Setting.get("COMPUTE_PROJECT_ID"),
-        os.getenv("EXECUTOR", "docker").split("|")[0]
+        os.getenv("EXECUTOR", "docker").split("__")[0]
     )
     logging.info("upload worker status... %s",url)
 

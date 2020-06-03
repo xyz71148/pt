@@ -74,9 +74,9 @@ class BaseModel(object):
         logging.info("===>>>>>self: %s",self)
         logging.info(self)
         res = dict()
-        logging.info(vars(self).keys())
+        #logging.info(vars(self).keys())
         for field in vars(self).keys():
-            logging.info('field: %s',field)
+            #logging.info('field: %s',field)
             if field in self.skip_dict_field():
                 continue
 
