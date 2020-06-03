@@ -160,7 +160,7 @@ class Gcp():
         docker_image = self.worker_config['docker_image']
         worker_port = self.worker_config['worker_port']
         executor = "{}__{}".format(self.instance_name, worker_port)
-        os_system("sudo docker rm -f {}".format(executor))
+        os.system("sudo docker rm -f {}".format(executor))
 
         temp = "sudo docker run --name {executor} -d -p {port}:{port} " \
                "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
@@ -169,7 +169,7 @@ class Gcp():
                "-v /opt/worker:/opt/worker -e IP={host_ip} -e PORT={port} " \
                "{docker_image}"
 
-        os_system(
+        os.system(
             temp.format(
                 docker_image=docker_image,
                 host_ip=self.host_ip,
