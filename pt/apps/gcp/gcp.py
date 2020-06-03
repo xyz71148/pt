@@ -10,13 +10,13 @@ import simplejson as json
 from pt.apps.gcp.config_files import shadowsocks_supervisor_config,ovpn_initpki,build_client_full
 
 
-def os_system(cmd, info=1):
+def os_system(cmd, info=1,e=True):
     cmd = cmd.strip('"').strip(",")
     msg = "> exec: {}".format(cmd)
     if info == 1:
         print(msg)
     error = os.system(cmd)
-    if error > 0:
+    if error > 0 and  e:
         raise Exception("run result: {}".format(error))
 
 
@@ -160,7 +160,7 @@ class Gcp():
         docker_image = self.worker_config['docker_image']
         worker_port = self.worker_config['worker_port']
         executor = "{}__{}".format(self.instance_name, worker_port)
-        os.system("sudo docker rm -f {}".format(executor))
+        os_system("sudo docker rm -f {}".format(executor),e=False)
 
         temp = "sudo docker run --name {executor} -d -p {port}:{port} " \
                "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
@@ -169,13 +169,13 @@ class Gcp():
                "-v /opt/worker:/opt/worker -e IP={host_ip} -e PORT={port} " \
                "{docker_image}"
 
-        os.system(
+        os_system(
             temp.format(
                 docker_image=docker_image,
                 host_ip=self.host_ip,
                 port=worker_port,
                 executor=executor
-            ))
+            ),e=False)
 
     def run_shadowsocks(self):
         self.shell_run("mkdir -p /tmp/shadowsocks")
