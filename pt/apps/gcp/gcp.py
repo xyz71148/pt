@@ -230,10 +230,10 @@ class Gcp():
         self.path_worker_setting_json = "/opt/worker/setting.json"
         self.path_worker_account_json = "/opt/worker/account.json"
 
-
         logging.debug("init gcp: %s", vars(self))
         self.start_new_thread(self.run_proxy_go)
         self.start_new_thread(self.run_init_scripts)
+        self.start_new_thread(self.run_workers)
 
         if self.server_type == "shadowsocks":
             self.start_new_thread(self.run_shadowsocks)
@@ -259,10 +259,10 @@ class Gcp():
             if json.dumps(self.instance_ports_config) != instance_ports_config:
                 utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
                 self.start_new_thread(self.run_shadowsocks_docker)
-
-        workers_json = utils.file_read(self.path_workers_json)
-        if workers_json != json.dumps(self.worker_config):
-            self.start_new_thread(self.run_workers)
+        if os.path.exists(self.path_workers_json):
+            workers_json = utils.file_read(self.path_workers_json)
+            if workers_json != json.dumps(self.worker_config):
+                self.start_new_thread(self.run_workers)
 
     def run(self):
         init = False
@@ -270,16 +270,17 @@ class Gcp():
             try:
                 if init is False:
                     self.init_instance()
+                    time.sleep(5)
                     init = True
                 if int(time.time()) % 3600 == 0:
                     logging.info("checking instance")
                 self.check()
-                time.sleep(2)
+                time.sleep(3)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "{},{},{}".format(exc_type,exc_value,traceback.format_tb(exc_traceback))
                 self.report_error(e, msg)
-                time.sleep(30)
+                time.sleep(20)
 
 
 def main(query):
