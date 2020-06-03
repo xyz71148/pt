@@ -26,7 +26,7 @@ setup(
         'pt.apps.chat',
         'pt.apps.chat.templates',
         'pt.apps.server',
-        'pt.apps.flask-app'
+        #'pt.apps.flask-app'
     ],
     package_data={
         "pt": ["apps/chat/templates/*.html"]
