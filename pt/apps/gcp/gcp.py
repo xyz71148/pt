@@ -153,6 +153,7 @@ class Gcp():
         utils.file_write(self.path_worker_setting_json, json.dumps(self.worker_config['setting']))
         utils.file_write(self.path_worker_account_json, json.dumps(self.worker_config['gcp_account']))
 
+
         docker_image = self.worker_config['docker_image']
         worker_port = self.worker_config['worker_port']
         executor = "{}|{}".format(self.instance_name, worker_port)
