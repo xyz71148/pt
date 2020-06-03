@@ -149,20 +149,17 @@ class Gcp():
 
     def run_workers(self):
         self.shell_run("mkdir -p /opt/worker")
-        worker_port = self.worker_config['worker_port']
         utils.file_write(self.path_workers_json, json.dumps(self.worker_config))
         utils.file_write(self.path_worker_setting_json, json.dumps(self.worker_config['setting']))
         utils.file_write(self.path_worker_account_json, json.dumps(self.worker_config['gcp_account']))
 
-        if worker_port is None:
-            return
-
         docker_image = self.worker_config['docker_image']
         worker_port = self.worker_config['worker_port']
         executor = "{}__{}".format(self.instance_name, worker_port)
-        os_system("sudo docker rm -f {}".format(executor),e=False)
-
-        temp = "sudo docker run --name {executor} -d -p {port}:{port} " \
+        os_system("sudo docker rm -f {}".format(executor), e=False)
+        if worker_port is None:
+            return
+        temp = "sudo docker run --cap-add=NET_ADMIN --name {executor} -d -p {port}:{port} " \
                "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
                "-e EXECUTOR={executor} -e APP=check,app_prod " \
                "-e FLASK_ENV=prod -e PYTHONPATH=/data/home " \
