@@ -4,41 +4,12 @@ import time
 import traceback
 import sys
 import logging
+import _thread
 import pt.libs.utils as utils
 import simplejson as json
-
-shadowsocks_supervisor_config = """[program:shadowsocks]
-command=/bin/bash -c "/usr/local/bin/ssserver -vv -c /etc/supervisor/conf_d/config.json"
-directory=/root/
-autostart=true
-autorestart=true
-priority=10
-stdout_logfile=/dev/fd/1
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/fd/2
-stderr_logfile_maxbytes=0"""
-
-ovpn_initpki = """#exp_internal 1 # Uncomment for debug
-set timeout -1
-spawn sudo docker run -it --volumes-from {ovpn_data} kylemanna/openvpn ovpn_initpki
-#expect -exact "Confirm removal:"
-#send -- "yes{sep}"
-expect -exact "Enter New CA Key Passphrase:"
-send -- "{pwd}{sep}"
-expect -exact "Re-Enter New CA Key Passphrase:"
-send -- "{pwd}{sep}"
-expect -exact "Common Name (eg: your user, host, or server name) \[Easy-RSA CA\]:"
-send -- "{host_ip}{sep}"
-expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key:"
-send -- "{pwd}{sep}"
-expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key:"
-send -- "{pwd}{sep}"
-expect eof"""
-
-build_client_full = """spawn sudo docker run -it --volumes-from {ovpn_data} kylemanna/openvpn easyrsa build-client-full {host_name} nopass
-expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key"
-send -- "{pwd}{sep}"
-expect eof"""
+import pt.apps.gcp.shadowsocks_supervisor_config as shadowsocks_supervisor_config
+import pt.apps.gcp.ovpn_initpki as ovpn_initpki
+import pt.apps.gcp.build_client_full as build_client_full
 
 
 def os_system(cmd, info=1):
@@ -65,6 +36,7 @@ class Gcp():
     http_server_port = None
     host_ip = None
     email = None
+    t_num = 0
 
     def __init__(self, query):
         logging.debug(query)
@@ -167,6 +139,20 @@ class Gcp():
                 file_upload=file_upload
             ))
 
+    def start_new_thread(self,func):
+        _thread.start_new_thread(func, ())
+
+    def run_init_scripts(self):
+        init_scripts = self.init_scripts
+        if len(init_scripts) > 0:
+            self.shell_run(init_scripts)
+
+    def run_shadowsocks(self):
+        self.shell_run("mkdir -p /tmp/shadowsocks")
+        utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
+        utils.file_write(self.path_shadowsocks_supervisor_config, shadowsocks_supervisor_config)
+        self.run_shadowsocks_docker()
+
     def init_instance(self):
         self.get_instance_info()
         self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
@@ -174,27 +160,18 @@ class Gcp():
         self.path_shadowsocks_server_json = "/tmp/shadowsocks/config.json"
 
         logging.debug("init gcp: %s", vars(self))
-
-        self.run_proxy_go()
-
-        init_scripts = self.init_scripts
-        if len(init_scripts) > 0:
-            self.shell_run(init_scripts)
+        self.start_new_thread(self.run_proxy_go)
+        self.start_new_thread(self.run_init_scripts)
 
         if self.server_type == "shadowsocks":
-            self.shell_run("mkdir -p /tmp/shadowsocks")
-            utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
-            utils.file_write(self.path_shadowsocks_supervisor_config, shadowsocks_supervisor_config)
-            self.run_shadowsocks_docker()
+            self.start_new_thread(self.run_shadowsocks)
 
         if self.server_type == "openvpn":
-            self.init_openvpn()
+            self.start_new_thread(self.run_openvpn)
 
-        # self.shell_run("sudo docker ps")
-        # self.shell_run("netstat -tnlp")
         self.upload_instance_status()
 
-    def init_openvpn(self):
+    def run_openvpn(self):
         if os.path.exists(self.ovpn_file):
             return
         self.shell_run("sudo mkdir -p /opt/openvpn")
@@ -250,6 +227,9 @@ class Gcp():
                 utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
                 self.run_shadowsocks_docker()
                 self.upload_instance_status()
+
+    def print_time(self):
+        logging.info(self.instance)
 
     def run(self):
         init = False

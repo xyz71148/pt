@@ -1,0 +1,10 @@
+shadowsocks_supervisor_config = """[program:shadowsocks]
+command=/bin/bash -c "/usr/local/bin/ssserver -vv -c /etc/supervisor/conf_d/config.json"
+directory=/root/
+autostart=true
+autorestart=true
+priority=10
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0"""
