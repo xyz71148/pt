@@ -1,5 +1,6 @@
-from flask import jsonify, Blueprint
+from flask import jsonify, Blueprint,current_app
 from app.helpers.setting import Setting
+import os
 
 app = Blueprint('setting.constant', __name__)
 
@@ -16,6 +17,10 @@ def get_constant():
        description: ok
     """
     constant = Setting.rows("constant")
-    constant['network'] = Setting.get("NETWORK_INFURA", default="main")
+    constant['port'] = os.getenv("PORT")
+    constant['executor'] = os.getenv("EXECUTOR")
+    constant['version'] = os.getenv("VERSION")
+    constant['debug'] = current_app.config['DEBUG']
+
     return jsonify(constant)
 
