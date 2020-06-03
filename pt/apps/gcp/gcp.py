@@ -159,10 +159,10 @@ class Gcp():
         os_system("sudo docker rm -f {}".format(executor))
 
         temp = "sudo docker run --name {executor} -d -p {port}:{port} " \
-               "-e AP_GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
-               "-e AP_EXECUTOR={executor} -e AP_ENV=1 -e APP=check,app_prod " \
-               "-e AP_FLASK_ENV=prod -e AP_PYTHONPATH=/data/home " \
-               "-v /opt/worker:/opt/worker -e AP_IP={host_ip} -e AP_PORT={port} " \
+               "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
+               "-e EXECUTOR={executor} -e APP=check,app_prod " \
+               "-e FLASK_ENV=prod -e PYTHONPATH=/data/home " \
+               "-v /opt/worker:/opt/worker -e IP={host_ip} -e PORT={port} " \
                "{docker_image}"
 
         os_system(
