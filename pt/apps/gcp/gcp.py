@@ -9,6 +9,7 @@ import pt.libs.utils as utils
 import simplejson as json
 from pt.apps.gcp.config_files import shadowsocks_supervisor_config,ovpn_initpki,build_client_full
 
+
 def os_system(cmd, info=1):
     cmd = cmd.strip('"').strip(",")
     msg = "> exec: {}".format(cmd)
@@ -110,6 +111,7 @@ class Gcp():
                        "-v /tmp/shadowsocks:/etc/supervisor/conf_d -e "
                        "BOOTS=shadowsocks " + ports + " --cap-add=NET_ADMIN sanfun/public:shadowsocks-v1",
                        raise_error=True)
+        self.upload_instance_status()
 
     def run_proxy_go(self):
         proxy = "https://{}.appspot.com".format(self.gae_project_id)
@@ -150,23 +152,6 @@ class Gcp():
         utils.file_write(self.path_shadowsocks_supervisor_config, shadowsocks_supervisor_config)
         self.run_shadowsocks_docker()
 
-    def init_instance(self):
-        self.get_instance_info()
-        self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
-        self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks.conf"
-        self.path_shadowsocks_server_json = "/tmp/shadowsocks/config.json"
-
-        logging.debug("init gcp: %s", vars(self))
-        self.start_new_thread(self.run_proxy_go)
-        self.start_new_thread(self.run_init_scripts)
-
-        if self.server_type == "shadowsocks":
-            self.start_new_thread(self.run_shadowsocks)
-
-        if self.server_type == "openvpn":
-            self.start_new_thread(self.run_openvpn)
-
-        self.upload_instance_status()
 
     def run_openvpn(self):
         if os.path.exists(self.ovpn_file):
@@ -208,6 +193,26 @@ class Gcp():
                 host_name=self.host_name,
                 port=port
             ), raise_error=True)
+        self.upload_instance_status()
+
+    def init_instance(self):
+        self.get_instance_info()
+        self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
+        self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks.conf"
+        self.path_shadowsocks_server_json = "/tmp/shadowsocks/config.json"
+
+        logging.debug("init gcp: %s", vars(self))
+        self.start_new_thread(self.run_proxy_go)
+        self.start_new_thread(self.run_init_scripts)
+
+        if self.server_type == "shadowsocks":
+            self.start_new_thread(self.run_shadowsocks)
+
+        if self.server_type == "openvpn":
+            self.start_new_thread(self.run_openvpn)
+
+
+
 
     def check(self):
         instance_info = self.get_instance_info()
