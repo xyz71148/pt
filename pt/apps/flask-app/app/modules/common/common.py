@@ -18,11 +18,14 @@ def err():
 
 @app.route('/check', methods=['GET'])
 def check():
-    if Setting.get("INITED", False):
+    logging.info("checking...")
+    if Setting.get("INITED", default=False):
         if os.path.exists("/opt/worker/setting.json"):
+            logging.info("init setting.json")
             Var.set("setting.json", utils.file_read("/opt/worker/setting.json"))
             Setting.set("INITED", True)
 
+    logging.info("upload worker status...")
     requests.post("https://{}.appspot.com/api/compute/instance/worker/{}".format(
         Setting.get("COMPUTE_PROJECT_ID"),
         os.getenv("EXECUTOR", "docker").split("|")[0]
