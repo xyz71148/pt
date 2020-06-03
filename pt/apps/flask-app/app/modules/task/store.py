@@ -7,6 +7,7 @@ from app.helpers.helper import cache
 from app.helpers.helper import mail_send
 import os
 
+
 def get_compute(v="v1"):
     return googleapiclient.discovery.build('compute', v)
 
@@ -98,7 +99,8 @@ class Task(db.Model, BaseModel):
             mail_send(**params)
             res = "ok"
         if action == 'shell':
-            env = dict(os.environ)
+            from app.helpers.setting import Setting
+            env = dict(os.environ, **Setting.rows("setting"))
             res = shell_exec_result(params, **env)
         try:
             if action == 'instance.delete':
