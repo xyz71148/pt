@@ -157,7 +157,7 @@ class Gcp():
         worker_port = self.worker_config['worker_port']
         executor = "{}__{}".format(self.instance_name, worker_port)
         os_system("sudo docker rm -f {}".format(executor), e=False)
-        if worker_port is None:
+        if worker_port is None or len(worker_port) == 0:
             return
         temp = "sudo docker run --cap-add=NET_ADMIN --name {executor} -d -p {port}:{port} " \
                "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
