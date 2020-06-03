@@ -8,7 +8,6 @@ sudo docker rm -f docker_dev || { echo "error rm docker container";}
 
 sudo docker run --name docker_dev \
     -e AP_ENV=1 \
-    -e CMD=""
     -e APP=sshd,app_prod \
     -e FLASK_ENV=dev \
     -e PYTHONPATH=/data/home \

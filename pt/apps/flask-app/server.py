@@ -37,46 +37,45 @@ def identity(payload):
     return User.row(int(user_id))
 
 
-def create_app():
-    parser = OptionParser()
-    parser.add_option("-l", "--level", default="debug", dest="level", help="logging level: debug|info")
-    parser.add_option("-p", "--port", default="8070", dest="port", help="server port listen on")
-    parser.add_option("-i", "--ip", default="127.0.0.1", dest="ip", help="server ip listen on")
-    parser.add_option("-f", "--log_file", default="./app.log", dest="log_file", help="location of log file")
+parser = OptionParser()
+parser.add_option("-l", "--level", default="debug", dest="level", help="logging level: debug|info")
+parser.add_option("-p", "--port", default="8070", dest="port", help="server port listen on")
+parser.add_option("-i", "--ip", default="127.0.0.1", dest="ip", help="server ip listen on")
+parser.add_option("-f", "--log_file", default="./app.log", dest="log_file", help="location of log file")
 
-    # mysql://root:password@127.0.0.1:3306/test
-    parser.add_option("-d", "--dsn", default="sqlite:///./app.db", dest="dsn", help="sqlalchemy datbase uri")
+# mysql://root:password@127.0.0.1:3306/test
+parser.add_option("-d", "--dsn", default="sqlite:///./app.db", dest="dsn", help="sqlalchemy datbase uri")
 
-    (options, args) = parser.parse_args()
-    app.config['SECRET_KEY'] = md5(os.path.abspath(__file__))
-    app.config['JWT_LEEWAY'] = 3600 * 24 * 7
-    app.config['SESSION_TYPE'] = 'null'
-    app.config['SQLALCHEMY_DATABASE_URI'] = options.dsn
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+(options, args) = parser.parse_args()
+app.config['SECRET_KEY'] = md5(os.path.abspath(__file__))
+app.config['JWT_LEEWAY'] = 3600 * 24 * 7
+app.config['SESSION_TYPE'] = 'null'
+app.config['SQLALCHEMY_DATABASE_URI'] = options.dsn
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    if options.level == "debug":
-        app.config['DEBUG'] = True
-        app.config['SQLALCHEMY_ECHO'] = True
-        set_logging(logging.DEBUG)
-    else:
-        app.config['DEBUG'] = False
-        app.config['SQLALCHEMY_ECHO'] = False
-        set_logging(logging.INFO)
+if options.level == "debug":
+    app.config['DEBUG'] = True
+    app.config['SQLALCHEMY_ECHO'] = True
+    set_logging(logging.DEBUG)
+else:
+    app.config['DEBUG'] = False
+    app.config['SQLALCHEMY_ECHO'] = False
+    set_logging(logging.INFO)
 
-    logging.info("options ====>>>: %s", options)
-    set_logging_file(options.level, options.log_file)
-    router.register(app)
-    JSONExceptionHandler(app)
-    Bootstrap(app)
-    cache.init_app(app)
-    JWT(app, authenticate, identity)
-    database.init(app)
+logging.info("options ====>>>: %s", options)
+set_logging_file(options.level, options.log_file)
+router.register(app)
+JSONExceptionHandler(app)
+Bootstrap(app)
+cache.init_app(app)
+JWT(app, authenticate, identity)
+database.init(app)
 
-    CORS(app, resources={
-        r"/api/*": {"origins": "*"}
-    })
-    app.run(host=options.ip, port=options.port)
+CORS(app, resources={
+    r"/api/*": {"origins": "*"}
+})
+
 
 
 if __name__ == '__main__':
-    create_app()
+    app.run(host=options.ip, port=options.port)
