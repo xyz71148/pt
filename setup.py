@@ -35,7 +35,8 @@ setup(
     platforms='any',
     install_requires=[
         "simplejson",
-        "requests"
+        "requests",
+        "flask"
     ],
     tests_require=[
         'coverage'
