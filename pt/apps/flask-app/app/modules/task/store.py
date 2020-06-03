@@ -1,8 +1,9 @@
+import simplejson as json
 from flask_sqlalchemy import SQLAlchemy
+from pt.libs.utils import shell_exec_result
 import googleapiclient.discovery
 from app.helpers.base_model import BaseModel
 from app.helpers.helper import cache
-import simplejson as json
 from app.helpers.helper import mail_send
 
 
@@ -96,6 +97,8 @@ class Task(db.Model, BaseModel):
         if action == 'email':
             mail_send(**params)
             res = "ok"
+        if action == 'shell':
+            res = shell_exec_result(params['cmd'])
         try:
             if action == 'instance.delete':
                 res = json.dumps(get_compute().instances().delete(**params).execute())
