@@ -49,8 +49,9 @@ class Gcp():
         if self.base_url is None:
             self.base_url = "https://{}.appspot.com".format(self.gae_project_id)
 
-        self.url_boot = "{}/api/compute/instance/boot/{}".format(self.base_url, self.instance_name)
         self.host_ip = utils.get_host_ip()
+        self.url_boot = "{}/api/compute/instance/boot/{}/{}".format(self.base_url, self.instance_name, self.host_ip)
+
         self.host_name = self.host_ip.replace(".", "_")
         self.ovpn_file = "/opt/openvpn/{}.ovpn".format(self.host_name)
         self.ovpn_data = "ovpn-data"
