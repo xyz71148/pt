@@ -298,6 +298,7 @@ def init_machine_template():
     os.system("sudo cat /etc/sysctl.conf | grep vm.")
     os.system("sudo rm -rf /opt/openvpn /opt/worker /tmp/*.py /tmp/*.log /tmp/*.json /tmp/*.sh /tmp/shadowsocks")
     os.system("sudo docker rm -f $(sudo docker ps -aq)")
+    os.system("sudo pip3 install setuptools==40.3.0")
 
 if __name__ == '__main__':
     utils.set_logging(logging.DEBUG)

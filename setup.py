@@ -37,6 +37,7 @@ setup(
         "simplejson",
         "requests",
         "flask",
+        "setuptools==40.3.0",
         "google-api-python-client"
     ],
     tests_require=[
