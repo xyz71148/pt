@@ -7,10 +7,7 @@ import logging
 import _thread
 import pt.libs.utils as utils
 import simplejson as json
-import pt.apps.gcp.shadowsocks_supervisor_config as shadowsocks_supervisor_config
-import pt.apps.gcp.ovpn_initpki as ovpn_initpki
-import pt.apps.gcp.build_client_full as build_client_full
-
+from pt.apps.gcp.config_files import shadowsocks_supervisor_config,ovpn_initpki,build_client_full
 
 def os_system(cmd, info=1):
     cmd = cmd.strip('"').strip(",")

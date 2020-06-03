@@ -1,3 +1,13 @@
+shadowsocks_supervisor_config = """[program:shadowsocks]
+command=/bin/bash -c "/usr/local/bin/ssserver -vv -c /etc/supervisor/conf_d/config.json"
+directory=/root/
+autostart=true
+autorestart=true
+priority=10
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0"""
 
 ovpn_initpki = """#exp_internal 1 # Uncomment for debug
 set timeout -1
@@ -15,3 +25,9 @@ send -- "{pwd}{sep}"
 expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key:"
 send -- "{pwd}{sep}"
 expect eof"""
+
+build_client_full = """spawn sudo docker run -it --volumes-from {ovpn_data} kylemanna/openvpn easyrsa build-client-full {host_name} nopass
+expect -exact "Enter pass phrase for /etc/openvpn/pki/private/ca.key"
+send -- "{pwd}{sep}"
+expect eof"""
+
