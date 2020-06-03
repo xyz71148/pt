@@ -59,6 +59,12 @@ else:
     app.config['DEBUG'] = False
     app.config['SQLALCHEMY_ECHO'] = False
 
+logging.getLogger('urllib3.connectionpool').setLevel(logging.INFO)
+logging.getLogger('google.auth.transport._mtls_helper').setLevel(logging.INFO)
+logging.getLogger('google.auth.transport.requests').setLevel(logging.INFO)
+logging.getLogger('google.cloud.ndb').setLevel(logging.INFO)
+logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+
 logging.info("options ====>>>: %s", options)
 router.register(app)
 JSONExceptionHandler(app)

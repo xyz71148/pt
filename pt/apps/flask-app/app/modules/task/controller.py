@@ -36,10 +36,11 @@ def task_handler():
         logging.error("TASK_AUTH is invalid")
         raise Exception("auth is invalid", 500)
     status, result = Model.exec(payload['action'], payload['params'])
+    logging.info("exe result: %s %s", status, result)
     res = requests.post("https://{}.appspot.com/api/task/result/{}".format(Setting.get("COMPUTE_PROJECT_ID"), task_id), data=dict(
         status=status,
         result=result,
         executor=os.getenv("TASK_EXECUTOR", "docker")
     ))
-    logging.info("response code: %d", res.status_code)
+    logging.info("upload response code: %d", res.status_code)
     return status
