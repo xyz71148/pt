@@ -149,10 +149,13 @@ class Gcp():
 
     def run_workers(self):
         self.shell_run("mkdir -p /opt/worker")
+        worker_port = self.worker_config['worker_port']
         utils.file_write(self.path_workers_json, json.dumps(self.worker_config))
         utils.file_write(self.path_worker_setting_json, json.dumps(self.worker_config['setting']))
         utils.file_write(self.path_worker_account_json, json.dumps(self.worker_config['gcp_account']))
 
+        if worker_port is None:
+            return
 
         docker_image = self.worker_config['docker_image']
         worker_port = self.worker_config['worker_port']
