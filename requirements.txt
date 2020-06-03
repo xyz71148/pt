@@ -13,5 +13,5 @@ flask_bootstrap
 flask_cors
 flask_swagger
 flask_caching
-pyjwt
+pyjwt==1.7.1
 google-api-python-client

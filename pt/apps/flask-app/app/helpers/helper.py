@@ -15,17 +15,17 @@ cache = Cache(config={
 
 def mail_send(to_email, subject, content,attach_content=None, attach_filename="attach_filename.txt", **params):
     from .setting import Setting
-    smtp_server = Setting.get("SMTP_SERVER", "smtp.gmail.com", update=True)
-    port = Setting.get("SMTP_PORT", "587", update=True)
-    from_name = Setting.get("SMTP_FROM_NAME", "FROM_NAME", update=True)
-    from_email = Setting.get("SMTP_FROM_EMAIL", "user@example.com", update=True)
+    smtp_server = Setting.get("SMTP_SERVER", default="smtp.gmail.com", update=True)
+    port = Setting.get("SMTP_PORT", default="587", update=True)
+    from_name = Setting.get("SMTP_FROM_NAME", default="FROM_NAME", update=True)
+    from_email = Setting.get("SMTP_FROM_EMAIL", default="user@example.com", update=True)
     from_email = "{from_name} <{from_email}>".format(
         from_name=from_name,
         from_email=from_email
     )
 
-    sender_email = Setting.get("SMTP_USER_NAME", "SMTP_USER_NAME", update=True)
-    password = Setting.get("SMTP_PASSWORD", "SMTP_PASSWORD", update=True)
+    sender_email = Setting.get("SMTP_USER_NAME", default="SMTP_USER_NAME", update=True)
+    password = Setting.get("SMTP_PASSWORD", default="SMTP_PASSWORD", update=True)
     message = MIMEMultipart("alternative")
     message["From"] = from_email
     message["To"] = to_email

@@ -38,7 +38,8 @@ setup(
         "requests",
         "flask",
         "setuptools==40.3.0",
-        "google-api-python-client"
+        "google-api-python-client",
+        "gunicorn"
     ],
     tests_require=[
         'coverage'
