@@ -1,8 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
-
+import googleapiclient.discovery
 from app.helpers.base_model import BaseModel
 from app.helpers.helper import cache
 import simplejson as json
+from app.helpers.helper import mail_send
+
+
+def get_compute(v="v1"):
+    return googleapiclient.discovery.build('compute', v)
 
 
 db = SQLAlchemy()
@@ -83,3 +88,28 @@ class Task(db.Model, BaseModel):
     @classmethod
     def rows_skip_dict_field(cls):
         return ["result"]
+
+    @classmethod
+    def exec(cls, action, params):
+        res = ""
+        status = STATUS['ok']
+        if action == 'email':
+            mail_send(**params)
+            res = "ok"
+        try:
+            if action == 'instance.delete':
+                res = json.dumps(get_compute().instances().delete(**params).execute())
+            if action == 'instance.create':
+                res = json.dumps(get_compute("beta").instances().insert(**params).execute())
+            if action == 'instance.stop':
+                res = json.dumps(get_compute().instances().stop(**params).execute())
+            if action == 'instance.start':
+                res = json.dumps(get_compute().instances().start(**params).execute())
+            if action == 'instance.reset':
+                res = json.dumps(get_compute().instances().reset(**params).execute())
+            if action == 'instance.create_machine_image':
+                res = json.dumps(get_compute("beta").machineImages().insert(**params).execute())
+        except Exception as e:
+            res = str(e)
+            status = STATUS['error']
+        return status, res

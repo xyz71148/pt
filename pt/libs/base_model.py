@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import desc, asc
 import logging
+from datetime import timezone
 
 
 class BaseModel(object):
@@ -84,7 +85,7 @@ class BaseModel(object):
 
             val = getattr(self, field)
             if field in ["expired_at", "updated_at", "started_at", "created_at"]:
-                val = val.timestamp() if val is not None else 0
+                val = val.strftime("%s")
 
             if field[0:1] != "_":
                 res[field] = val

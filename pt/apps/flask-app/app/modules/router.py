@@ -13,6 +13,7 @@ def register(app):
 
     app.register_blueprint(var.controller_admin.app)
     app.register_blueprint(task.controller_admin.app)
+    app.register_blueprint(task.controller.app)
     app.register_blueprint(user.controller_auth.app)
     app.register_blueprint(user.controller_user.app)
     app.register_blueprint(user.controller_admin.app)

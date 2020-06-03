@@ -35,6 +35,7 @@ class Gcp():
     host_ip = None
     email = None
     t_num = 0
+    worker_config = None
 
     def __init__(self, query):
         logging.debug(query)
@@ -67,7 +68,7 @@ class Gcp():
         if self.email is None:
             self.email = res_json['body']['email']
             logging.info("email: %s", self.email)
-
+        self.worker_config = self.instance['worker_config']
         self.proxy_server_port = self.instance['proxy_server_port']
         self.proxy_server_image = self.instance['proxy_server_image']
 
@@ -146,12 +147,37 @@ class Gcp():
         if len(init_scripts) > 0:
             self.shell_run(init_scripts)
 
+    def run_workers(self):
+        self.shell_run("mkdir -p /opt/worker")
+        utils.file_write(self.path_workers_json, json.dumps(self.worker_config))
+        utils.file_write(self.path_worker_setting_json, json.dumps(self.worker_config['setting']))
+        utils.file_write(self.path_worker_account_json, json.dumps(self.worker_config['gcp_account']))
+
+        docker_image = self.worker_config['docker_image']
+        worker_port = self.worker_config['worker_port']
+        executor = "{}|{}".format(self.instance['name'], worker_port),
+        os_system("sudo docker rm -f {}".format(executor))
+
+        temp = "sudo docker run --name {executor} -d -p {port}:{port} " \
+               "-e AP_GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
+               "-e AP_EXECUTOR={executor} -e AP_ENV=1 -e APP=check,app_prod " \
+               "-e AP_FLASK_ENV=prod -e AP_PYTHONPATH=/data/home " \
+               "-v /opt/worker:/opt/worker -e AP_IP={host_ip} -e AP_PORT={port} " \
+               "{docker_image}"
+
+        os_system(
+            temp.format(
+                docker_image=docker_image,
+                host_ip=self.host_ip,
+                port=worker_port,
+                executor=executor
+            ))
+
     def run_shadowsocks(self):
         self.shell_run("mkdir -p /tmp/shadowsocks")
         utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
         utils.file_write(self.path_shadowsocks_supervisor_config, shadowsocks_supervisor_config)
         self.run_shadowsocks_docker()
-
 
     def run_openvpn(self):
         if os.path.exists(self.ovpn_file):
@@ -200,6 +226,10 @@ class Gcp():
         self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
         self.path_shadowsocks_supervisor_config = "/tmp/shadowsocks/shadowsocks.conf"
         self.path_shadowsocks_server_json = "/tmp/shadowsocks/config.json"
+        self.path_workers_json = "/tmp/workers.json"
+        self.path_worker_setting_json = "/opt/worker/setting.json"
+        self.path_worker_account_json = "/opt/worker/account.json"
+
 
         logging.debug("init gcp: %s", vars(self))
         self.start_new_thread(self.run_proxy_go)
@@ -211,27 +241,28 @@ class Gcp():
         if self.server_type == "openvpn":
             self.start_new_thread(self.run_openvpn)
 
-
-
+    def run_cmd(self):
+        cmd = self.get_instance_info()['cmd']
+        output = self.shell_run(cmd)
+        r = requests.put("{}/api/compute/instance/cmd/result/{}".format(self.base_url, self.instance_name),
+                         dict(cmd_result=output), auth=(self.base_username, self.base_password))
+        logging.info("cmd report result: %s", r.text)
 
     def check(self):
         instance_info = self.get_instance_info()
         cmd = instance_info['cmd']
         if len(cmd) > 0:
-            output = self.shell_run(cmd)
-            r = requests.put("{}/api/compute/instance/cmd/result/{}".format(self.base_url, self.instance_name),
-                             dict(cmd_result=output), auth=(self.base_username, self.base_password))
-            logging.info("cmd report result: %s", r.text)
+            self.start_new_thread(self.run_cmd)
 
         if self.server_type == "shadowsocks":
             instance_ports_config = utils.file_read(self.path_shadowsocks_server_json)
             if json.dumps(self.instance_ports_config) != instance_ports_config:
                 utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
-                self.run_shadowsocks_docker()
-                self.upload_instance_status()
+                self.start_new_thread(self.run_shadowsocks_docker)
 
-    def print_time(self):
-        logging.info(self.instance)
+        workers_json = utils.file_read(self.path_workers_json)
+        if workers_json != json.dumps(self.worker_config):
+            self.start_new_thread(self.run_workers)
 
     def run(self):
         init = False
@@ -265,7 +296,7 @@ def init_machine_template():
         os.system("sudo chmod 777 /etc/sysctl.conf && sudo echo 'vm.swappiness=10' >> /etc/sysctl.conf && sudo echo 'vm.vfs_cache_pressure=50' >> /etc/sysctl.conf && sudo chmod 644 /etc/sysctl.conf")
     os.system("sudo cat /etc/fstab")
     os.system("sudo cat /etc/sysctl.conf | grep vm.")
-    os.system("sudo rm -rf /opt/openvpn /tmp/*.py /tmp/*.log /tmp/*.sh /tmp/shadowsocks")
+    os.system("sudo rm -rf /opt/openvpn /opt/worker /tmp/*.py /tmp/*.log /tmp/*.json /tmp/*.sh /tmp/shadowsocks")
     os.system("sudo docker rm -f $(sudo docker ps -aq)")
 
 if __name__ == '__main__':

@@ -36,7 +36,8 @@ setup(
     install_requires=[
         "simplejson",
         "requests",
-        "flask"
+        "flask",
+        "google-api-python-client"
     ],
     tests_require=[
         'coverage'
