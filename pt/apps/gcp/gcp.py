@@ -57,7 +57,7 @@ class Gcp():
         self.ovpn_data = "ovpn-data"
 
     def get_instance_info(self):
-        logging.debug("get_instance_info: %s", self.url_boot)
+        logging.info("get_instance_info: %s", self.url_boot)
         res = requests.get(self.url_boot, auth=(self.base_username, self.base_password))
         logging.debug(res.text)
         if res.status_code != 200:
@@ -157,10 +157,11 @@ class Gcp():
         docker_image = self.worker_config['docker_image']
         worker_port = self.worker_config['worker_port']
         executor = "{}__{}".format(self.instance_name, worker_port)
-        os_system("sudo docker rm -f {}".format(executor), e=False)
         if worker_port is None or len(worker_port) == 0:
+            os_system("sudo docker rm -f {}".format(self.instance_name), e=False)
             return
-        temp = "sudo docker run --cap-add=NET_ADMIN --name {executor} -d -p {port}:{port} " \
+
+        temp = "sudo docker run --cap-add=NET_ADMIN --name {name} -d -p {port}:{port} " \
                "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
                "-e EXECUTOR={executor} -e APP=check,app_prod " \
                "-e FLASK_ENV=prod -e PYTHONPATH=/data/home " \
@@ -172,7 +173,8 @@ class Gcp():
                 docker_image=docker_image,
                 host_ip=self.host_ip,
                 port=worker_port,
-                executor=executor
+                executor=executor,
+                name=self.instance_name
             ),e=False)
 
     def run_shadowsocks(self):
