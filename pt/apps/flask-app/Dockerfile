@@ -9,6 +9,7 @@ ENV EXECUTOR docker
 
 COPY docker-data/image /
 COPY docker-data/supervisor /etc/supervisor/conf_d
+COPY ./ /data/home
 
 #
 #RUN pip install simplejson \
@@ -29,5 +30,7 @@ COPY docker-data/supervisor /etc/supervisor/conf_d
 #        pyjwt \
 #        google-api-python-client \
 #        git+https://github.com/xyz71148/pt
+
+
 
 RUN sh /bin/process_ssh.sh
