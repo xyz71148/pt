@@ -38,7 +38,6 @@ def identity(payload):
 
 
 parser = OptionParser()
-parser.add_option("-l", "--level", default="debug", dest="level", help="logging level: debug|info")
 parser.add_option("-p", "--port", default="8070", dest="port", help="server port listen on")
 parser.add_option("-i", "--ip", default="127.0.0.1", dest="ip", help="server ip listen on")
 parser.add_option("-f", "--log_file", default="./app.log", dest="log_file", help="location of log file")
@@ -53,7 +52,7 @@ app.config['SESSION_TYPE'] = 'null'
 app.config['SQLALCHEMY_DATABASE_URI'] = options.dsn
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-if options.level == "debug":
+if os.getenv("FLASK_ENV","prod") == "dev":
     app.config['DEBUG'] = True
     app.config['SQLALCHEMY_ECHO'] = True
     set_logging(logging.DEBUG)
@@ -61,9 +60,9 @@ else:
     app.config['DEBUG'] = False
     app.config['SQLALCHEMY_ECHO'] = False
     set_logging(logging.INFO)
+    set_logging_file("info", options.log_file)
 
 logging.info("options ====>>>: %s", options)
-set_logging_file(options.level, options.log_file)
 router.register(app)
 JSONExceptionHandler(app)
 Bootstrap(app)
