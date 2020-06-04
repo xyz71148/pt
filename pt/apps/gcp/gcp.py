@@ -164,7 +164,7 @@ class Gcp():
 
         temp = "sudo docker run --cap-add=NET_ADMIN --name {name} -d -p {port}:{port} " \
                "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
-               "-e EXECUTOR={executor} -e APP=check,shel_check_build,shel_check_deploy,app_prod " \
+               "-e EXECUTOR={executor} -e APP=check,app_prod " \
                "-e FLASK_ENV=prod -e PYTHONPATH=/data/home " \
                "-v /opt/worker:/opt/worker -e IP={host_ip} -e PORT={port} " \
                "{docker_image}"
