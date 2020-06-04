@@ -247,8 +247,7 @@ class Gcp():
             self.start_new_thread(self.run_openvpn)
 
     def run_cmd(self):
-        cmd = self.get_instance_info()['cmd']
-        output = self.shell_run(cmd)
+        output = self.shell_run(self.instance['cmd'])
         r = requests.put("{}/api/compute/instance/cmd/result/{}".format(self.base_url, self.instance_name),
                          dict(cmd_result=output), auth=(self.base_username, self.base_password))
         logging.info("cmd report result: %s", r.text)
