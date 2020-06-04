@@ -264,6 +264,7 @@ class Gcp():
             if json.dumps(self.instance_ports_config) != instance_ports_config:
                 utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
                 self.start_new_thread(self.run_shadowsocks_docker)
+
         if os.path.exists(self.path_workers_json):
             workers_json = utils.file_read(self.path_workers_json)
             if workers_json != json.dumps(self.worker_config):
@@ -285,7 +286,7 @@ class Gcp():
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 msg = "{},{},{}".format(exc_type,exc_value,traceback.format_tb(exc_traceback))
                 self.report_error(e, msg)
-                time.sleep(20)
+                time.sleep(10)
 
 
 def main(query):
