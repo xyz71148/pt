@@ -151,6 +151,7 @@ class Gcp():
     run_workers_enable = False
 
     def run_workers(self):
+        logging.info("run_workers_enable: %s",self.run_workers_enable)
         if self.run_workers_enable:
             return
         self.shell_run("mkdir -p /opt/worker")
@@ -187,6 +188,7 @@ class Gcp():
     run_shadowsocks_enable = False
 
     def run_shadowsocks(self):
+        logging.info("run_shadowsocks_enable: %s",self.run_shadowsocks_enable)
         if self.run_shadowsocks_enable:
             return
         self.run_shadowsocks_enable = True
@@ -199,7 +201,7 @@ class Gcp():
     run_openvpn_enable =False
 
     def run_openvpn(self):
-
+        logging.info("run_openvpn_enable: %s",self.run_openvpn_enable)
         if os.path.exists(self.ovpn_file):
             return
 
@@ -295,6 +297,7 @@ class Gcp():
     check_worker_task_deploy_enable = False
 
     def check_worker_task_deploy(self):
+        logging.info("check_worker_task_deploy_enable: %s",self.check_worker_task_deploy_enable)
         path = "/opt/worker/p-deploy.sh"
         if os.path.exists(path) and self.check_worker_task_deploy_enable is False:
             self.check_worker_task_deploy_enable = True
@@ -305,6 +308,7 @@ class Gcp():
     check_worker_task_build_enable = False
 
     def check_worker_task_build(self):
+        logging.info("check_worker_task_build_enable: %s",self.check_worker_task_build_enable)
         path = "/opt/worker/p-build.sh"
         if os.path.exists(path) and self.check_worker_task_build_enable is False:
             self.check_worker_task_build_enable = True
