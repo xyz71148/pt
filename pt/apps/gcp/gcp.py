@@ -302,7 +302,6 @@ class Gcp():
         if os.path.exists(path) and self.check_worker_task_deploy_enable is False:
             self.check_worker_task_deploy_enable = True
             os_system("sudo sh " + path + " >> /tmp/deploy.log", e=False)
-            self.shell_run("sudo rm -rf " + path)
             self.check_worker_task_deploy_enable = False
 
     check_worker_task_build_enable = False
@@ -313,7 +312,6 @@ class Gcp():
         if os.path.exists(path) and self.check_worker_task_build_enable is False:
             self.check_worker_task_build_enable = True
             os_system("sudo sh " + path + " >> /tmp/build.log", e=False)
-            self.shell_run("sudo rm -rf " + path)
             self.check_worker_task_build_enable = False
 
     def run(self):
