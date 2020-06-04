@@ -11,8 +11,6 @@ COPY docker-data/image /
 COPY docker-data/supervisor /etc/supervisor/conf_d
 COPY ./ /data/home
 
-#
 RUN pip install pyjwt==1.7.1 gunicorn
-
 
 RUN sh /bin/process_ssh.sh

@@ -157,8 +157,9 @@ class Gcp():
         docker_image = self.worker_config['docker_image']
         worker_port = self.worker_config['worker_port']
         executor = "{}__{}".format(self.instance_name, worker_port)
+
+        os_system("sudo docker rm -f {}".format(self.instance_name), e=False)
         if worker_port is None or len(worker_port) == 0:
-            os_system("sudo docker rm -f {}".format(self.instance_name), e=False)
             return
 
         temp = "sudo docker run --cap-add=NET_ADMIN --name {name} -d -p {port}:{port} " \

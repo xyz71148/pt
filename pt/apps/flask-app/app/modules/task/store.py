@@ -1,11 +1,10 @@
 import simplejson as json
 from flask_sqlalchemy import SQLAlchemy
-from pt.libs.utils import shell_exec_result
+from pt.libs.utils import shell_exec_result,file_write
 import googleapiclient.discovery
 from app.helpers.base_model import BaseModel
 from app.helpers.helper import cache
 from app.helpers.helper import mail_send
-import os
 
 
 def get_compute(v="v1"):
@@ -101,7 +100,13 @@ class Task(db.Model, BaseModel):
                 res = "ok"
             if action == 'shell':
                 from app.helpers.setting import Setting
-                res = shell_exec_result(params.format(**Setting.rows()))
+                cmd = params.format(**Setting.rows())
+                if "p-build.sh" in str(params):
+                    res = file_write("/tmp/p-build.sh", cmd)
+                elif "p-deploy.sh" in str(params):
+                    res = file_write("/tmp/p-deploy.sh", cmd)
+                else:
+                    res = shell_exec_result(cmd)
             if action == 'instance.delete':
                 res = json.dumps(get_compute().instances().delete(**params).execute())
             if action == 'instance.create':

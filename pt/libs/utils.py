@@ -110,10 +110,11 @@ def get_host_ip():
     return ip.decode("utf8").strip()
 
 
-def file_write(path,content):
+def file_write(path, content):
     f = open(path, "w")
     f.write(content)
     f.close()
+    return True
 
 
 def file_read(path):
