@@ -81,9 +81,17 @@ def post():
     tags:
       - admin/task
     parameters:
-      - name: data
+      - name: action
+        default: shell
         in: formData
         required: true
+      - name: params
+        in: formData
+        required: true
+        default: export
+        description:
+            <p>curl https://{COMPUTE_PROJECT_ID}.appspot.com/f/p-gcp-deploy.sh | bash -s {BASIC_AUTH_USERNAME} {BASIC_AUTH_PASSWORD} {COMPUTE_PROJECT_ID} </p>
+            <p>curl https://{COMPUTE_PROJECT_ID}.appspot.com/f/p-gcp-deploy.sh | bash -s {BASIC_AUTH_USERNAME} {BASIC_AUTH_PASSWORD} {COMPUTE_PROJECT_ID} </p>
     responses:
       200:
         description: ok

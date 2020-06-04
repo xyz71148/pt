@@ -95,13 +95,13 @@ class Task(db.Model, BaseModel):
     def exec(cls, action, params):
         res = ""
         status = STATUS['ok']
-        if action == 'email':
-            mail_send(**params)
-            res = "ok"
-        if action == 'shell':
-            from app.helpers.setting import Setting
-            res = shell_exec_result(params.format(**Setting.rows()))
         try:
+            if action == 'email':
+                mail_send(**params)
+                res = "ok"
+            if action == 'shell':
+                from app.helpers.setting import Setting
+                res = shell_exec_result(params.format(**Setting.rows()))
             if action == 'instance.delete':
                 res = json.dumps(get_compute().instances().delete(**params).execute())
             if action == 'instance.create':

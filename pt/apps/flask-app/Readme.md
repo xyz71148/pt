@@ -1,6 +1,6 @@
 
 
-    export IMAGE_NAME=sanfun/public:worker-v9
+    export IMAGE_NAME=sanfun/public:worker-v10
     sudo docker tag docker_dev $IMAGE_NAME
     echo $DOCKER_PWD | sudo docker login --username=$DOCKER_USR --password-stdin
     sudo docker push $IMAGE_NAME
