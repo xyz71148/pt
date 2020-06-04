@@ -7,16 +7,16 @@ import logging
 import _thread
 import pt.libs.utils as utils
 import simplejson as json
-from pt.apps.gcp.config_files import shadowsocks_supervisor_config,ovpn_initpki,build_client_full
+from pt.apps.gcp.config_files import shadowsocks_supervisor_config, ovpn_initpki, build_client_full
 
 
-def os_system(cmd, info=1,e=True):
+def os_system(cmd, info=1, e=True):
     cmd = cmd.strip('"').strip(",")
     msg = "> exec: {}".format(cmd)
     if info == 1:
         print(msg)
     error = os.system(cmd)
-    if error > 0 and  e:
+    if error > 0 and e:
         raise Exception("run result: {}".format(error))
 
 
@@ -86,8 +86,8 @@ class Gcp():
             return
         try:
             requests.put("{}//api/utils/email".format(self.base_url),
-                     dict(email=self.email, title=e, content=error),
-                     auth=(self.base_username, self.base_password))
+                         dict(email=self.email, title=e, content=error),
+                         auth=(self.base_username, self.base_password))
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
@@ -140,7 +140,7 @@ class Gcp():
                 file_upload=file_upload
             ))
 
-    def start_new_thread(self,func):
+    def start_new_thread(self, func):
         _thread.start_new_thread(func, ())
 
     def run_init_scripts(self):
@@ -148,13 +148,12 @@ class Gcp():
         if len(init_scripts) > 0:
             self.shell_run(init_scripts)
 
-    def run_workers(self):
-        self.shell_run("mkdir -p /opt/worker")
-        utils.file_write(self.path_workers_json, json.dumps(self.worker_config))
-        utils.file_write(self.path_worker_setting_json, json.dumps(self.worker_config['setting']))
-        utils.file_write(self.path_worker_account_json, json.dumps(self.worker_config['gcp_account']))
+    run_workers_enable = False
 
-        docker_image = self.worker_config['docker_image']
+    def run_workers(self):
+        if self.run_workers_enable:
+            return
+        self.shell_run("mkdir -p /opt/worker")
         worker_port = self.worker_config['worker_port']
         executor = "{}__{}".format(self.instance_name, worker_port)
 
@@ -162,6 +161,12 @@ class Gcp():
         if worker_port is None or len(worker_port) == 0:
             return
 
+        self.run_workers_enable = True
+        utils.file_write(self.path_workers_json, json.dumps(self.worker_config))
+        utils.file_write(self.path_worker_setting_json, json.dumps(self.worker_config['setting']))
+        utils.file_write(self.path_worker_account_json, json.dumps(self.worker_config['gcp_account']))
+
+        docker_image = self.worker_config['docker_image']
         temp = "sudo docker run --cap-add=NET_ADMIN --name {name} -d -p {port}:{port} " \
                "-e GOOGLE_APPLICATION_CREDENTIALS=/opt/worker/account.json " \
                "-e EXECUTOR={executor} -e APP=check,app_prod " \
@@ -176,17 +181,31 @@ class Gcp():
                 port=worker_port,
                 executor=executor,
                 name=self.instance_name
-            ),e=False)
+            ), e=False)
+        self.run_workers_enable = False
+
+    run_shadowsocks_enable = False
 
     def run_shadowsocks(self):
+        if self.run_shadowsocks_enable:
+            return
+        self.run_shadowsocks_enable = True
         self.shell_run("mkdir -p /tmp/shadowsocks")
         utils.file_write(self.path_shadowsocks_server_json, json.dumps(self.instance_ports_config))
         utils.file_write(self.path_shadowsocks_supervisor_config, shadowsocks_supervisor_config)
         self.run_shadowsocks_docker()
+        self.run_shadowsocks_enable = False
+
+    run_openvpn_enable =False
 
     def run_openvpn(self):
+
         if os.path.exists(self.ovpn_file):
             return
+
+        if self.run_openvpn_enable:
+            return
+        self.run_openvpn_enable = True
         self.shell_run("sudo mkdir -p /opt/openvpn")
         self.shell_run("sudo docker rm -f {}".format(self.ovpn_data))
         self.shell_run("sudo docker run --name {ovpn_data} -v /etc/openvpn busybox".format(ovpn_data=self.ovpn_data))
@@ -225,6 +244,7 @@ class Gcp():
                 port=port
             ), raise_error=True)
         self.upload_instance_status()
+        self.run_openvpn_enable = False
 
     def init_instance(self):
         self.get_instance_info()
@@ -269,6 +289,29 @@ class Gcp():
             if workers_json != json.dumps(self.worker_config):
                 self.start_new_thread(self.run_workers)
 
+        self.start_new_thread(self.check_worker_task_deploy)
+        self.start_new_thread(self.check_worker_task_build)
+
+    check_worker_task_deploy_enable = False
+
+    def check_worker_task_deploy(self):
+        path = "/opt/worker/p-deploy.sh"
+        if os.path.exists(path) and self.check_worker_task_deploy_enable is False:
+            self.check_worker_task_deploy_enable = True
+            os_system("sudo sh " + path + " >> /tmp/deploy.log", e=False)
+            self.shell_run("sudo rm -rf " + path)
+            self.check_worker_task_deploy_enable = False
+
+    check_worker_task_build_enable = False
+
+    def check_worker_task_build(self):
+        path = "/opt/worker/p-build.sh"
+        if os.path.exists(path) and self.check_worker_task_build_enable is False:
+            self.check_worker_task_build_enable = True
+            os_system("sudo sh " + path + " >> /tmp/build.log", e=False)
+            self.shell_run("sudo rm -rf " + path)
+            self.check_worker_task_build_enable = False
+
     def run(self):
         init = False
         while True:
@@ -283,7 +326,7 @@ class Gcp():
                 time.sleep(3)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
-                msg = "{},{},{}".format(exc_type,exc_value,traceback.format_tb(exc_traceback))
+                msg = "{},{},{}".format(exc_type, exc_value, traceback.format_tb(exc_traceback))
                 self.report_error(e, msg)
                 time.sleep(10)
 
@@ -298,13 +341,16 @@ def init_machine_template():
         os.system("sudo dd if=/dev/zero of=/swapfile bs=1M count=1024")
         os.system("sudo mkswap -f /swapfile")
         os.system("sudo mkswap -f /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile && free -m")
-        os.system("sudo chmod 777 /etc/fstab && sudo echo '/swapfile none swap sw 0 0' >> /etc/fstab && sudo chmod 644 /etc/fstab")
-        os.system("sudo chmod 777 /etc/sysctl.conf && sudo echo 'vm.swappiness=10' >> /etc/sysctl.conf && sudo echo 'vm.vfs_cache_pressure=50' >> /etc/sysctl.conf && sudo chmod 644 /etc/sysctl.conf")
+        os.system(
+            "sudo chmod 777 /etc/fstab && sudo echo '/swapfile none swap sw 0 0' >> /etc/fstab && sudo chmod 644 /etc/fstab")
+        os.system(
+            "sudo chmod 777 /etc/sysctl.conf && sudo echo 'vm.swappiness=10' >> /etc/sysctl.conf && sudo echo 'vm.vfs_cache_pressure=50' >> /etc/sysctl.conf && sudo chmod 644 /etc/sysctl.conf")
     os.system("sudo cat /etc/fstab")
     os.system("sudo cat /etc/sysctl.conf | grep vm.")
     os.system("sudo rm -rf /opt/openvpn /opt/worker /tmp/*.py /tmp/*.log /tmp/*.json /tmp/*.sh /tmp/shadowsocks")
     os.system("sudo docker rm -f $(sudo docker ps -aq)")
     os.system("sudo pip3 install setuptools==40.3.0")
+
 
 if __name__ == '__main__':
     utils.set_logging(logging.DEBUG)
