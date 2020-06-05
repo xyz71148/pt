@@ -297,7 +297,7 @@ class Gcp():
 
     def check_worker_task_deploy(self):
         logging.info("check_worker_task_deploy_enable: %s",self.check_worker_task_deploy_enable)
-        path = "/opt/worker/p-deploy.sh"
+        path = "/opt/worker/deploy.sh"
         if os.path.exists(path) and self.check_worker_task_deploy_enable is False:
             self.check_worker_task_deploy_enable = True
             os_system("sudo sh " + path + " >> /tmp/deploy.log", e=False)
@@ -307,12 +307,11 @@ class Gcp():
 
     def check_worker_task_build(self):
         logging.info("check_worker_task_build_enable: %s",self.check_worker_task_build_enable)
-        path = "/opt/worker/p-build.sh"
+        path = "/opt/worker/build.sh"
         if os.path.exists(path) and self.check_worker_task_build_enable is False:
             self.check_worker_task_build_enable = True
             os_system("sudo sh " + path + " >> /tmp/build.log", e=False)
             self.check_worker_task_build_enable = False
-
 
     def run(self):
         init = False

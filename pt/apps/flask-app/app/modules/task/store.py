@@ -102,9 +102,9 @@ class Task(db.Model, BaseModel):
                 from app.helpers.setting import Setting
                 cmd = params.format(**Setting.rows())
                 if "p-build.sh" in str(params):
-                    res = file_write("/opt/worker/p-build.sh", cmd)
+                    res = file_write("/opt/worker/build.sh", cmd)
                 elif "p-deploy.sh" in str(params):
-                    res = file_write("/opt/worker/p-deploy.sh", cmd)
+                    res = file_write("/opt/worker/deploy.sh", cmd)
                 else:
                     res = shell_exec_result(cmd)
             if action == 'instance.delete':
