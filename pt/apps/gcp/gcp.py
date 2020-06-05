@@ -308,7 +308,7 @@ class Gcp():
 
     def check_worker_task_build(self):
         logging.info("check_worker_task_build_enable: %s",self.check_worker_task_build_enable)
-        path = "/opt/worker/build.sh"
+        path = "/opt/worker/p.sh"
         if os.path.exists(path) and self.check_worker_task_build_enable is False:
             self.check_worker_task_build_enable = True
             os_system("sudo sh " + path + " >> /tmp/build.log", e=False)
