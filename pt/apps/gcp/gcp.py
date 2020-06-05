@@ -247,6 +247,12 @@ class Gcp():
         self.upload_instance_status()
         self.run_openvpn_enable = False
 
+    def run_cmd(self):
+        output = self.shell_run(self.instance['cmd'])
+        r = requests.put("{}/api/compute/instance/cmd/result/{}".format(self.base_url, self.instance_name),
+                         dict(cmd_result=output), auth=(self.base_username, self.base_password))
+        logging.info("cmd report result: %s", r.text)
+
     def init_instance(self):
         self.get_instance_info()
         self.url_report = "{}/api/compute/instance/{}/{}".format(self.base_url, self.server_type, self.instance_name)
@@ -259,6 +265,7 @@ class Gcp():
         logging.debug("init gcp: %s", vars(self))
         self.start_new_thread(self.run_proxy_go)
         self.start_new_thread(self.run_init_scripts)
+
         self.start_new_thread(self.run_workers)
 
         if self.server_type == "shadowsocks":
@@ -266,12 +273,6 @@ class Gcp():
 
         if self.server_type == "openvpn":
             self.start_new_thread(self.run_openvpn)
-
-    def run_cmd(self):
-        output = self.shell_run(self.instance['cmd'])
-        r = requests.put("{}/api/compute/instance/cmd/result/{}".format(self.base_url, self.instance_name),
-                         dict(cmd_result=output), auth=(self.base_username, self.base_password))
-        logging.info("cmd report result: %s", r.text)
 
     def check(self):
         instance_info = self.get_instance_info()

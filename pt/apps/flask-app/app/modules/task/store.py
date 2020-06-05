@@ -101,9 +101,9 @@ class Task(db.Model, BaseModel):
             if action == 'shell':
                 from app.helpers.setting import Setting
                 cmd = params.format(**Setting.rows())
-                if "p-build.sh" in str(params):
+                if "build.sh" in str(params):
                     res = file_write("/opt/worker/build.sh", cmd)
-                elif "p-deploy.sh" in str(params):
+                elif "deploy.sh" in str(params):
                     res = file_write("/opt/worker/deploy.sh", cmd)
                 else:
                     res = shell_exec_result(cmd)
