@@ -79,7 +79,6 @@ class Gcp():
         self.port_password = res_json['body']['config']['port_password']
         return res_json['body']
 
-    @classmethod
     def report_error(self, e, error):
         logging.error(error)
         if self.email is None:
@@ -314,13 +313,14 @@ class Gcp():
             os_system("sudo sh " + path + " >> /tmp/build.log", e=False)
             self.check_worker_task_build_enable = False
 
+
     def run(self):
         init = False
         while True:
             try:
                 if init is False:
                     self.init_instance()
-                    time.sleep(5)
+                    time.sleep(2)
                     init = True
                 if int(time.time()) % 3600 == 0:
                     logging.info("checking instance")
