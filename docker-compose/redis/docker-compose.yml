@@ -1,0 +1,12 @@
+version: "3"
+services:
+  redis_db:
+    image: redis
+    command: redis-server
+    ports:
+      - 8379:6379
+    networks:
+      - app
+networks:
+  app:
+    external: true

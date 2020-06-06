@@ -1,0 +1,60 @@
+FROM ubuntu:18.04
+MAINTAINER Barry <dhole.me@gmail.com>
+
+ENV TZ 'Asia/Shanghai'
+ENV VERSION 1.0.11
+
+#RUN sed -i "s/security\.ubuntu\.com/mirrors\.ustc\.edu\.cn/g" /etc/apt/*.list && sed -i "s/archive\.ubuntu\.com/mirrors\.ustc\.edu\.cn/g" /etc/apt/*.list
+#RUN sed -i "s/mirrors\.ustc\.edu\.cn/security\.ubuntu\.com/g" /etc/apt/*.list && sed -i "s/archive\.ubuntu\.com/mirrors\.ustc\.edu\.cn/g" /etc/apt/*.list
+RUN sed -i "s/mirrors\.ustc\.edu\.cn/mirrors\.aliyun\.com/g" /etc/apt/*.list && sed -i "s/archive\.ubuntu\.com/mirrors\.ustc\.edu\.cn/g" /etc/apt/*.list
+
+
+COPY docker-data/image /
+
+RUN apt-get -y --fix-missing update
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            net-tools  \
+            tzdata \
+            inetutils-ping \
+            wget \
+            curl \
+            zip \
+            unzip \
+            vim \
+            rsync \
+            telnet \
+            net-tools \
+            git \
+  			&& echo $TZ > /etc/timezone \
+  			&& rm /etc/localtime \
+            && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+            && dpkg-reconfigure -f noninteractive tzdata
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            python-setuptools \
+            python-pip \
+            python-dev \
+            libmysqlclient-dev \
+            && pip install virtualenv
+
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            nodejs
+
+RUN cd /opt/ && wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-280.0.0-linux-x86_64.tar.gz \
+    && tar zxvf google-cloud-sdk-280.0.0-linux-x86_64.tar.gz && rm -f google-cloud-sdk-280.0.0-linux-x86_64.tar.gz \
+    && ./google-cloud-sdk/install.sh -q \
+    && chmod +x ./google-cloud-sdk/bin/dev_appserver.py \
+    && ln -s /opt/google-cloud-sdk/bin/* /usr/local/bin \
+    && gcloud components install app-engine-python
+
+USER root
+
+#flask
+EXPOSE 5000
+
+WORKDIR /data
+
+CMD ["bash"]

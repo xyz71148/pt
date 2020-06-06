@@ -110,6 +110,12 @@ def get_host_ip():
     return ip.decode("utf8").strip()
 
 
+def check_socket(host, port):
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+        sock.settimeout(2)
+        return sock.connect_ex((host, port)) == 0
+
+
 def file_write(path, content):
     f = open(path, "w")
     f.write(content)
