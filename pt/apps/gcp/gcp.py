@@ -197,6 +197,9 @@ class Gcp():
         self.run_shadowsocks_docker()
         self.run_shadowsocks_enable = False
 
+    def run_common(self):
+        self.upload_instance_status()
+
     run_openvpn_enable =False
 
     def run_openvpn(self):
@@ -273,6 +276,9 @@ class Gcp():
 
         if self.server_type == "openvpn":
             self.start_new_thread(self.run_openvpn)
+
+        if self.server_type == "common":
+            self.start_new_thread(self.run_common)
 
     def check(self):
         instance_info = self.get_instance_info()
