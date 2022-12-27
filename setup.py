@@ -37,7 +37,7 @@ setup(
         "simplejson",
         "requests",
         "flask",
-        "setuptools==40.3.0",
+        "setuptools==65.5.1",
         "google-api-python-client",
         "gunicorn"
     ],
